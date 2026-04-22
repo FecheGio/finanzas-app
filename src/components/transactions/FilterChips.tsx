@@ -1,31 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const FILTERS = ["TODOS", "INGRESOS", "GASTOS", "COMIDA", "TRANSPORTE", "SALUD"] as const;
-type Filter = (typeof FILTERS)[number];
-
-interface FilterChipsProps {
-  onChange?: (filter: Filter) => void;
+export interface ChipItem {
+  label: string;
+  value: string;
 }
 
-export function FilterChips({ onChange }: FilterChipsProps) {
-  const [active, setActive] = useState<Filter>("TODOS");
+interface FilterChipsProps {
+  chips: ChipItem[];
+  value: string;
+  onChange: (value: string) => void;
+}
 
-  const handleSelect = (f: Filter) => {
-    setActive(f);
-    onChange?.(f);
-  };
-
+export function FilterChips({ chips, value, onChange }: FilterChipsProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
-      {FILTERS.map((f) => {
-        const isActive = active === f;
+      {chips.map((chip) => {
+        const isActive = value === chip.value;
         return (
           <button
-            key={f}
-            onClick={() => handleSelect(f)}
+            key={chip.value}
+            onClick={() => onChange(chip.value)}
             className={cn(
               "shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest transition-all",
               isActive
@@ -33,7 +29,7 @@ export function FilterChips({ onChange }: FilterChipsProps) {
                 : "bg-card-raised text-muted-foreground hover:text-foreground"
             )}
           >
-            {f}
+            {chip.label}
           </button>
         );
       })}

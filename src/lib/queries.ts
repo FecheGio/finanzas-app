@@ -54,6 +54,21 @@ export async function deleteTransaction(id: string) {
   if (error) throw error;
 }
 
+export async function updateTransaction(
+  id: string,
+  payload: {
+    amount: number;
+    type: "income" | "expense";
+    category_id: string;
+    description: string;
+    date: string;
+  }
+) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("transactions").update(payload).eq("id", id);
+  if (error) throw error;
+}
+
 // ── Category CRUD ─────────────────────────────────────────────
 
 export async function createCategory(payload: {

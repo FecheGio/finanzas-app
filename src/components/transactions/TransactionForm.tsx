@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getCategories, createTransaction } from "@/lib/queries";
+import { getCategories, createTransaction, updateTransaction } from "@/lib/queries";
 import { toCentavos } from "@/lib/utils";
 import type { Category, TransactionType } from "@/types";
 import * as LucideIcons from "lucide-react";
@@ -12,7 +12,6 @@ import * as LucideIcons from "lucide-react";
 type AnyIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 type IconLib = Record<string, AnyIcon>;
 
-// Dynamic Lucide icon by name
 function DynIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
   const pascal = name
     .split(/[-_]/)
@@ -23,13 +22,30 @@ function DynIcon({ name, className, style }: { name: string; className?: string;
   return <Icon className={className} style={style} />;
 }
 
-export function TransactionForm() {
+interface InitialValues {
+  type: TransactionType;
+  amount: number; // centavos
+  categoryId: string;
+  description: string;
+  date: string;
+}
+
+interface TransactionFormProps {
+  transactionId?: string;
+  initialValues?: InitialValues;
+}
+
+export function TransactionForm({ transactionId, initialValues }: TransactionFormProps) {
   const router = useRouter();
-  const [type, setType] = useState<TransactionType>("expense");
-  const [amountStr, setAmountStr] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const isEditing = Boolean(transactionId);
+
+  const [type, setType] = useState<TransactionType>(initialValues?.type ?? "expense");
+  const [amountStr, setAmountStr] = useState(
+    initialValues ? String(initialValues.amount / 100) : ""
+  );
+  const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? "");
+  const [description, setDescription] = useState(initialValues?.description ?? "");
+  const [date, setDate] = useState(initialValues?.date ?? new Date().toISOString().slice(0, 10));
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCats, setLoadingCats] = useState(true);
@@ -55,7 +71,23 @@ export function TransactionForm() {
 
     setLoading(true);
     try {
-      await createTransaction({ amount: centavos, type, category_id: categoryId, description: description.trim(), date });
+      if (isEditing && transactionId) {
+        await updateTransaction(transactionId, {
+          amount: centavos,
+          type,
+          category_id: categoryId,
+          description: description.trim(),
+          date,
+        });
+      } else {
+        await createTransaction({
+          amount: centavos,
+          type,
+          category_id: categoryId,
+          description: description.trim(),
+          date,
+        });
+      }
       router.push("/transactions");
       router.refresh();
     } catch (err: unknown) {
@@ -195,7 +227,7 @@ export function TransactionForm() {
         style={{ background: accentColor, color: "#fff" }}
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        Guardar {isIncome ? "Ingreso" : "Gasto"}
+        {isEditing ? "Guardar cambios" : `Guardar ${isIncome ? "Ingreso" : "Gasto"}`}
       </button>
     </form>
   );

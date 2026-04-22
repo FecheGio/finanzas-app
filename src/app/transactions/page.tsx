@@ -1,49 +1,69 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getTransactions, groupByDate } from "@/lib/queries";
+import { getTransactions, getCategories, groupByDate } from "@/lib/queries";
 import { MiniStatCard } from "@/components/transactions/MiniStatCard";
-import { FilterChips } from "@/components/transactions/FilterChips";
+import { FilterChips, type ChipItem } from "@/components/transactions/FilterChips";
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
-import type { Transaction } from "@/types";
+import { TransactionBottomSheet } from "@/components/transactions/TransactionBottomSheet";
+import type { Transaction, Category } from "@/types";
 
 export default function TransactionsPage() {
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { router.replace("/login"); return; }
-      getTransactions()
-        .then(setTransactions)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    });
+  const thisMonth = new Date().toISOString().slice(0, 7);
+
+  const load = useCallback(async () => {
+    const session = (await supabase.auth.getSession()).data.session;
+    if (!session) { router.replace("/login"); return; }
+    const [txs, cats] = await Promise.all([getTransactions(), getCategories()]);
+    setTransactions(txs);
+    setCategories(cats);
+    setLoading(false);
   }, [router]);
 
-  // Refresh list when tab regains focus (after adding a transaction)
+  useEffect(() => { load(); }, [load]);
+
   useEffect(() => {
-    const handler = () => {
-      getTransactions().then(setTransactions).catch(console.error);
-    };
+    const handler = () => { load(); };
     window.addEventListener("focus", handler);
     return () => window.removeEventListener("focus", handler);
-  }, []);
+  }, [load]);
+
+  // Chips dinámicos: TODOS + INGRESOS + GASTOS + categorías del usuario
+  const chips: ChipItem[] = [
+    { label: "TODOS", value: "all" },
+    { label: "INGRESOS", value: "income" },
+    { label: "GASTOS", value: "expense" },
+    ...categories.map((c) => ({ label: c.name.toUpperCase(), value: c.id })),
+  ];
+
+  // Filtrado real
+  const filtered = transactions.filter((tx) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "income") return tx.type === "income";
+    if (activeFilter === "expense") return tx.type === "expense";
+    return tx.category_id === activeFilter;
+  });
 
   const monthlyIncome = transactions
-    .filter((t) => t.type === "income" && t.date.startsWith(new Date().toISOString().slice(0, 7)))
+    .filter((t) => t.type === "income" && t.date.startsWith(thisMonth))
     .reduce((s, t) => s + t.amount, 0);
   const monthlyExpenses = transactions
-    .filter((t) => t.type === "expense" && t.date.startsWith(new Date().toISOString().slice(0, 7)))
+    .filter((t) => t.type === "expense" && t.date.startsWith(thisMonth))
     .reduce((s, t) => s + t.amount, 0);
 
-  const groups = groupByDate(transactions);
+  const groups = groupByDate(filtered);
 
   if (loading) {
     return (
@@ -77,7 +97,7 @@ export default function TransactionsPage() {
 
       {/* Filter chips */}
       <div className="px-5 mb-5">
-        <FilterChips />
+        <FilterChips chips={chips} value={activeFilter} onChange={setActiveFilter} />
       </div>
 
       {/* Transaction groups */}
@@ -88,9 +108,14 @@ export default function TransactionsPage() {
           <p className="text-xs text-muted-foreground">Tocá el + para agregar la primera</p>
         </div>
       ) : (
-        <div className="px-1 pb-6">
+        <div className="px-1 pb-32">
           {groups.map((g) => (
-            <TransactionGroup key={g.dateLabel} dateLabel={g.dateLabel} transactions={g.transactions} />
+            <TransactionGroup
+              key={g.dateLabel}
+              dateLabel={g.dateLabel}
+              transactions={g.transactions}
+              onTap={setSelectedTx}
+            />
           ))}
         </div>
       )}
@@ -103,6 +128,13 @@ export default function TransactionsPage() {
       >
         <Plus className="h-7 w-7 text-lime-foreground" />
       </Link>
+
+      {/* Bottom sheet */}
+      <TransactionBottomSheet
+        transaction={selectedTx}
+        onClose={() => setSelectedTx(null)}
+        onDeleted={load}
+      />
     </div>
   );
 }

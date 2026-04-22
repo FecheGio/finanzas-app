@@ -24,9 +24,10 @@ const ICON_MAP: Record<string, IconComponent> = {
 
 interface TransactionItemProps {
   transaction: Transaction;
+  onClick?: () => void;
 }
 
-export function TransactionItem({ transaction }: TransactionItemProps) {
+export function TransactionItem({ transaction, onClick }: TransactionItemProps) {
   const { type, amount, description, time, category } = transaction;
   const isIncome = type === "income";
 
@@ -35,7 +36,10 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
   const color = category?.color ?? (isIncome ? "#22C55E" : "#E05252");
 
   return (
-    <div className="flex items-center gap-3 py-3">
+    <div
+      className="flex items-center gap-3 py-3 cursor-pointer active:opacity-60 transition-opacity"
+      onClick={onClick}
+    >
       {/* Category icon */}
       <div
         className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
@@ -71,9 +75,10 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
 interface TransactionGroupProps {
   dateLabel: string;
   transactions: Transaction[];
+  onTap?: (tx: Transaction) => void;
 }
 
-export function TransactionGroup({ dateLabel, transactions }: TransactionGroupProps) {
+export function TransactionGroup({ dateLabel, transactions, onTap }: TransactionGroupProps) {
   return (
     <div className="mb-2">
       <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground px-4 py-2">
@@ -81,7 +86,7 @@ export function TransactionGroup({ dateLabel, transactions }: TransactionGroupPr
       </p>
       <div className="bg-card-raised rounded-2xl divide-y divide-border px-4">
         {transactions.map((tx) => (
-          <TransactionItem key={tx.id} transaction={tx} />
+          <TransactionItem key={tx.id} transaction={tx} onClick={() => onTap?.(tx)} />
         ))}
       </div>
     </div>
