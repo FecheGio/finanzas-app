@@ -31,8 +31,11 @@ export default function LoginPage() {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setInfo("Revisá tu email para confirmar la cuenta, luego iniciá sesión.");
-        setMode("login");
+        // Confirmación deshabilitada en Supabase → login directo
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+        if (loginError) throw loginError;
+        router.push("/");
+        router.refresh();
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error desconocido");
