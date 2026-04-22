@@ -60,19 +60,19 @@ export default function TransactionsPage() {
         <div className="flex items-center gap-2 mb-2">
           <span className="h-2 w-2 rounded-full bg-lime" />
           <span className="text-[10px] font-black tracking-[0.25em] uppercase text-muted-foreground">
-            Activity
+            Actividad
           </span>
         </div>
         <h1 className="text-4xl font-black uppercase tracking-tight leading-none mb-1">
-          Transactions
+          Transacciones
         </h1>
         <p className="text-sm text-muted-foreground">Cada peso que entra y sale</p>
       </div>
 
       {/* Mini stat cards */}
       <div className="flex gap-3 px-5 mb-5">
-        <MiniStatCard label="INCOME"   centavos={monthlyIncome}   trend={0} sparkline={[1,2,1,3,2,3,monthlyIncome / 10000]} />
-        <MiniStatCard label="EXPENSES" centavos={monthlyExpenses} trend={0} sparkline={[1,2,2,3,2,4,monthlyExpenses / 10000]} />
+        <MiniStatCard label="INGRESOS" centavos={monthlyIncome}   trend={0} sparkline={[1,2,1,3,2,3,monthlyIncome / 10000]} />
+        <MiniStatCard label="GASTOS"   centavos={monthlyExpenses} trend={0} sparkline={[1,2,2,3,2,4,monthlyExpenses / 10000]} />
       </div>
 
       {/* Filter chips */}

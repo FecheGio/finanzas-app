@@ -12,11 +12,11 @@ import { BudgetEditModal } from "@/components/budget/BudgetEditModal";
 import { cn } from "@/lib/utils";
 import type { Transaction, Budget, Category } from "@/types";
 
-type Tab = "MONTHLY" | "YEARLY";
+type Tab = "MENSUAL" | "ANUAL";
 
 export default function BudgetPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("MONTHLY");
+  const [tab, setTab] = useState<Tab>("MENSUAL");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
@@ -82,8 +82,8 @@ export default function BudgetPage() {
       {/* Header */}
       <div className="px-5 pt-6 pb-6 flex items-start justify-between">
         <h1 className="text-4xl font-black uppercase leading-none tracking-tight">
-          <span className="text-muted-foreground">Your M—{new Date().getMonth() + 1 < 10 ? `0${new Date().getMonth() + 1}` : new Date().getMonth() + 1}</span>
-          <br />Budget
+          <span className="text-muted-foreground">Presupuesto</span>
+          <br />{new Date().toLocaleDateString("es-AR", { month: "long" })}
         </h1>
         <button
           onClick={() => setEditOpen(true)}
@@ -96,7 +96,7 @@ export default function BudgetPage() {
 
       {/* Tab switcher */}
       <div className="flex mx-5 mb-6 bg-card-raised rounded-full p-1">
-        {(["MONTHLY", "YEARLY"] as Tab[]).map((t) => (
+        {(["MENSUAL", "ANUAL"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -110,7 +110,7 @@ export default function BudgetPage() {
         ))}
       </div>
 
-      {tab === "MONTHLY" ? (
+      {tab === "MENSUAL" ? (
         <>
           {/* Budget circle */}
           <div className="px-5 mb-6">

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const FILTERS = ["ALL", "INCOME", "EXPENSES", "FOOD", "TRANSPORT", "HEALTH"] as const;
+const FILTERS = ["TODOS", "INGRESOS", "GASTOS", "COMIDA", "TRANSPORTE", "SALUD"] as const;
 type Filter = (typeof FILTERS)[number];
 
 interface FilterChipsProps {
@@ -11,7 +11,7 @@ interface FilterChipsProps {
 }
 
 export function FilterChips({ onChange }: FilterChipsProps) {
-  const [active, setActive] = useState<Filter>("ALL");
+  const [active, setActive] = useState<Filter>("TODOS");
 
   const handleSelect = (f: Filter) => {
     setActive(f);

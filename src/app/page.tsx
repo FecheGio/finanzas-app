@@ -86,7 +86,7 @@ export default function HomePage() {
       <div className="px-5 pt-4 pb-6">
         <p className="text-sm text-muted-foreground mb-1">{greeting()}</p>
         <h1 className="text-4xl font-black uppercase leading-none tracking-tight">
-          Your Total<br />Balance
+          Tu balance<br />total
         </h1>
       </div>
 

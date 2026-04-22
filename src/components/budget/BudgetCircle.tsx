@@ -55,7 +55,7 @@ export function BudgetCircle({
               {Math.round(percentage)}%
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/60 mt-1">
-              Used this month
+              Usado este mes
             </span>
           </div>
         </div>
@@ -64,15 +64,15 @@ export function BudgetCircle({
       {/* Stats row */}
       <div className="flex items-center divide-x divide-white/20">
         <div className="flex-1 text-center">
-          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-1">Spent</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-1">Gastado</p>
           <p className="text-base font-black tabular-nums text-red-300">{formatARS(spentCentavos)}</p>
         </div>
         <div className="flex-1 text-center">
-          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-1">Budget</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-1">Presupuesto</p>
           <p className="text-base font-black tabular-nums">{formatARS(budgetCentavos)}</p>
         </div>
         <div className="flex-1 text-center">
-          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-1">Left</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-1">Restante</p>
           <p className="text-base font-black tabular-nums text-lime">{formatARS(leftCentavos)}</p>
         </div>
       </div>

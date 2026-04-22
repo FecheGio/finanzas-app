@@ -37,7 +37,7 @@ export function BalanceCard({
       {/* Card header */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">
-          Available Funds
+          Fondos disponibles
         </span>
         <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-white/60">
           {month}
@@ -53,7 +53,7 @@ export function BalanceCard({
       <div className="flex items-center divide-x divide-white/20">
         <div className="flex-1 pr-4">
           <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-0.5">
-            Income
+            Ingresos
           </p>
           <p className="text-sm font-bold text-green-300">
             +{formatARS(incomeCentavos)}
@@ -61,7 +61,7 @@ export function BalanceCard({
         </div>
         <div className="flex-1 px-4">
           <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-0.5">
-            Expenses
+            Gastos
           </p>
           <p className="text-sm font-bold text-red-300">
             -{formatARS(expensesCentavos)}
@@ -69,7 +69,7 @@ export function BalanceCard({
         </div>
         <div className="flex-1 pl-4">
           <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-0.5">
-            Saved
+            Ahorrado
           </p>
           <p className="text-sm font-bold text-white">
             {formatARS(savedCentavos)}

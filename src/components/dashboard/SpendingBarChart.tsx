@@ -83,7 +83,7 @@ export function SpendingBarChart({ transactions }: SpendingBarChartProps) {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-4">
-        <span className="text-sm font-black tracking-widest uppercase">Spending</span>
+        <span className="text-sm font-black tracking-widest uppercase">Gastos</span>
         <div className="flex gap-1 bg-muted rounded-lg p-0.5">
           {(["W", "M", "Y"] as SpendingPeriod[]).map((p) => (
             <button

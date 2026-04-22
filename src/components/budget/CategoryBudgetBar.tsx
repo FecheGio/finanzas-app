@@ -65,7 +65,7 @@ export function CategoryBudgetBar({
         </div>
 
         <p className="text-[10px] text-muted-foreground mt-1">
-          {formatARS(remaining)} remaining
+          {formatARS(remaining)} restante
         </p>
       </div>
     </div>

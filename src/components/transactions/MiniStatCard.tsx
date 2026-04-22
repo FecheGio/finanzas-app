@@ -5,14 +5,14 @@ import { formatARS } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface MiniStatCardProps {
-  label: "INCOME" | "EXPENSES";
+  label: "INGRESOS" | "GASTOS";
   centavos: number;
   trend: number;
   sparkline: number[];
 }
 
 export function MiniStatCard({ label, centavos, trend, sparkline }: MiniStatCardProps) {
-  const isIncome = label === "INCOME";
+  const isIncome = label === "INGRESOS";
   const color = isIncome ? "#22C55E" : "#E05252";
   const positive = trend >= 0;
 
