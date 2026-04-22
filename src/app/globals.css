@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Dark-first palette ─────────────────────────── */
+    --background:    250 55%  6%;   /* #08071A near-black purple */
+    --foreground:      0  0% 96%;   /* #F5F5F5 */
+
+    --card:          252 42%  9%;   /* #0C0A1C dark card */
+    --card-foreground: 0  0% 96%;
+    --card-raised:   252 38% 13%;   /* #121024 slightly lighter */
+
+    --popover:       252 42%  9%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary:       263 82% 58%;   /* #7C3AED violet */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary:     252 30% 16%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted:         252 30% 13%;
+    --muted-foreground: 245 12% 50%;
+
+    --accent:        252 30% 18%;
+    --accent-foreground: 0 0% 96%;
+
+    --destructive:     0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:        250 30% 15%;
+    --input:         250 30% 15%;
+    --ring:          263 82% 58%;
+
+    /* Lime accent (active nav, selected tabs, FAB) */
+    --lime:           74 100% 46%;  /* #AEEA00 */
+    --lime-foreground: 0 0% 0%;
+
+    /* Finance semantic tokens */
+    --income:        142 71% 45%;   /* #22C55E */
+    --income-foreground: 0 0% 100%;
+    --income-muted:  142 40% 10%;
+
+    --expense:         0 72% 55%;   /* #E05252 */
+    --expense-foreground: 0 0% 100%;
+    --expense-muted:   0 40% 10%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Safe area for mobile bottom nav */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+  }
+}
+
+@layer utilities {
+  /* Purple gradient for balance / budget cards */
+  .card-purple-gradient {
+    background: linear-gradient(140deg, #2A1867 0%, #4A1E9E 45%, #6D28D9 100%);
+  }
+
+  /* Lime gradient for progress bars */
+  .progress-lime {
+    background: linear-gradient(90deg, #86EFAC 0%, #AEEA00 100%);
+  }
+
+  /* Neon glow on active elements */
+  .glow-primary {
+    box-shadow: 0 0 20px 2px hsl(263 82% 58% / 0.4);
+  }
+
+  .income-badge {
+    @apply bg-income-muted text-income;
+  }
+  .expense-badge {
+    @apply bg-expense-muted text-expense;
+  }
+}

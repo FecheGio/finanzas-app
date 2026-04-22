@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# env — NUNCA commitear claves
+.env
+.env.local
+.env*.local
+
+# build artifacts
+tsconfig.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude internal
+MEMORY.md
+.claude/
