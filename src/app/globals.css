@@ -69,7 +69,10 @@
 @layer utilities {
   /* Purple gradient for balance / budget cards */
   .card-purple-gradient {
-    background: linear-gradient(140deg, #2A1867 0%, #4A1E9E 45%, #6D28D9 100%);
+    background: linear-gradient(140deg, rgba(42, 24, 103, 0.72) 0%, rgba(74, 30, 158, 0.72) 45%, rgba(109, 40, 217, 0.72) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   /* Lime gradient for progress bars */
