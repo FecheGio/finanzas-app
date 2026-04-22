@@ -32,8 +32,8 @@ export default function HomePage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.replace("/login"); return; }
-      const email = session.user.email ?? "";
-      setUserName(email.split("@")[0]);
+      const alias = session.user.user_metadata?.alias ?? session.user.email?.split("@")[0] ?? "Usuario";
+      setUserName(alias);
 
       getTransactions()
         .then((txs: Transaction[]) => {
