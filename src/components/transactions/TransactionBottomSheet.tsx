@@ -54,12 +54,12 @@ export function TransactionBottomSheet({ transaction, onClose, onDeleted }: Prop
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl px-5 pt-4 pb-10 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-[70] bg-card rounded-t-3xl px-5 pt-4 pb-10 shadow-2xl">
         {/* Handle */}
         <div className="w-10 h-1 rounded-full bg-muted mx-auto mb-5" />
 
