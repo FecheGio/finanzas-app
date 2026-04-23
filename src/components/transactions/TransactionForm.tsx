@@ -97,7 +97,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
         date,
         card_id: type === "expense" ? cardId : null,
         installments: hasCard ? installments : 0,
-        start_month: hasCard && installments > 0 ? computeStartMonth(date, afterClosing) : null,
+        start_month: hasCard ? computeStartMonth(date, afterClosing) : null,
       };
       if (isEditing && transactionId) {
         await updateTransaction(transactionId, payload);
@@ -257,8 +257,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
             })}
           </div>
 
-          {installments > 0 && (
-            <div className="mt-3">
+          <div className="mt-3">
               <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground mb-2">
                 ¿Cuándo fue la compra?
               </p>
@@ -285,7 +284,6 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
                   : `Se contabiliza desde ${computeStartMonth(date, false).replace("-", "/")}`}
               </p>
             </div>
-          )}
         </div>
       )}
 
