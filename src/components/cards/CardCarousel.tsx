@@ -36,9 +36,7 @@ export function CardCarousel({
             style={{
               background: `linear-gradient(135deg, ${card.color}ee, ${card.color}88)`,
               height: "120px",
-              outline: isSelected ? `2px solid ${card.color}` : "none",
-              outlineOffset: "3px",
-              transform: isSelected ? "scale(1.02)" : "scale(1)",
+              border: isSelected ? `2.5px solid rgba(255,255,255,0.8)` : "2.5px solid transparent",
             }}
             onClick={() => onSelect(card.id)}
           >

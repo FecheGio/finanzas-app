@@ -10,10 +10,12 @@ export function useFinancials(transactions: Transaction[]) {
   const thisMonth = currentMonth();
 
   const summary = useMemo<DashboardSummary>(() => {
+    const [cy, cm] = thisMonth.split("-").map(Number);
     let totalBalance = 0;
     let monthlyIncome = 0;
     let monthlyExpenses = 0;
-    let cardDebt = 0;
+    let cardTotalDebt = 0;
+    let cardDueThisMonth = 0;
 
     for (const tx of transactions) {
       const amount = tx.amount;
@@ -21,7 +23,25 @@ export function useFinancials(transactions: Transaction[]) {
         totalBalance += amount;
         if (tx.date.startsWith(thisMonth)) monthlyIncome += amount;
       } else if (tx.card_id) {
-        cardDebt += amount;
+        const inst = tx.installments ?? 0;
+        const sm = tx.start_month;
+        if (inst === 0) {
+          if (sm) {
+            const [sy, smm] = sm.split("-").map(Number);
+            const diff = (cy - sy) * 12 + (cm - smm);
+            if (diff === 0) { cardDueThisMonth += amount; cardTotalDebt += amount; }
+            else if (diff < 0) { cardTotalDebt += amount; }
+          } else { cardTotalDebt += amount; }
+        } else {
+          if (sm) {
+            const [sy, smm] = sm.split("-").map(Number);
+            const cuotaNum = (cy - sy) * 12 + (cm - smm) + 1;
+            if (cuotaNum >= 1 && cuotaNum <= inst) {
+              cardDueThisMonth += amount;
+              cardTotalDebt += amount * (inst - cuotaNum + 1);
+            } else if (cuotaNum < 1) { cardTotalDebt += amount * inst; }
+          } else { cardTotalDebt += amount * inst; }
+        }
       } else {
         totalBalance -= amount;
         if (tx.date.startsWith(thisMonth)) monthlyExpenses += amount;
@@ -34,7 +54,8 @@ export function useFinancials(transactions: Transaction[]) {
       monthlyExpenses,
       monthlyBalance: monthlyIncome - monthlyExpenses,
       saved: Math.max(monthlyIncome - monthlyExpenses, 0),
-      cardDebt,
+      cardTotalDebt,
+      cardDueThisMonth,
     };
   }, [transactions, thisMonth]);
 

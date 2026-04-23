@@ -8,6 +8,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getTransactions, computeSummary } from "@/lib/queries";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
+import { DebtCard } from "@/components/dashboard/DebtCard";
 import { SpendingBarChart } from "@/components/dashboard/SpendingBarChart";
 import type { Transaction, DashboardSummary } from "@/types";
 
@@ -19,7 +20,7 @@ function greeting() {
 }
 
 const EMPTY: DashboardSummary = {
-  totalBalance: 0, monthlyIncome: 0, monthlyExpenses: 0, monthlyBalance: 0, saved: 0, cardDebt: 0,
+  totalBalance: 0, monthlyIncome: 0, monthlyExpenses: 0, monthlyBalance: 0, saved: 0, cardTotalDebt: 0, cardDueThisMonth: 0,
 };
 
 export default function HomePage() {
@@ -100,10 +101,20 @@ export default function HomePage() {
           incomeCentavos={summary.monthlyIncome}
           expensesCentavos={summary.monthlyExpenses}
           savedCentavos={summary.saved}
-          cardDebtCentavos={summary.cardDebt}
           month={monthLabel}
         />
       </div>
+
+      {/* Debt card */}
+      {summary.cardTotalDebt > 0 && (
+        <div className="px-5 mb-6">
+          <DebtCard
+            totalDebtCentavos={summary.cardTotalDebt}
+            dueThisMonthCentavos={summary.cardDueThisMonth}
+            month={monthLabel}
+          />
+        </div>
+      )}
 
       {/* Spending chart — datos reales */}
       <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">

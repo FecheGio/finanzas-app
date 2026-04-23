@@ -187,18 +187,48 @@ export async function deleteCard(id: string): Promise<void> {
 
 export function computeSummary(transactions: Transaction[]): DashboardSummary {
   const month = currentMonth();
+  const [cy, cm] = month.split("-").map(Number);
   let totalBalance = 0;
   let monthlyIncome = 0;
   let monthlyExpenses = 0;
-  let cardDebt = 0;
+  let cardTotalDebt = 0;
+  let cardDueThisMonth = 0;
 
   for (const tx of transactions) {
     if (tx.type === "income") {
       totalBalance += tx.amount;
       if (tx.date.startsWith(month)) monthlyIncome += tx.amount;
     } else if (tx.card_id) {
-      // Card expenses: tracked as debt, excluded from cash balance
-      cardDebt += tx.amount;
+      const inst = tx.installments ?? 0;
+      const sm = tx.start_month;
+
+      if (inst === 0) {
+        // Pago único: due in start_month
+        if (sm) {
+          const [sy, smm] = sm.split("-").map(Number);
+          const diff = (cy - sy) * 12 + (cm - smm);
+          if (diff === 0) { cardDueThisMonth += tx.amount; cardTotalDebt += tx.amount; }
+          else if (diff < 0) { cardTotalDebt += tx.amount; } // not yet due
+          // diff > 0: already paid, don't count
+        } else {
+          cardTotalDebt += tx.amount;
+        }
+      } else {
+        // Installments: amount = monthly cuota
+        if (sm) {
+          const [sy, smm] = sm.split("-").map(Number);
+          const cuotaNum = (cy - sy) * 12 + (cm - smm) + 1;
+          if (cuotaNum >= 1 && cuotaNum <= inst) {
+            cardDueThisMonth += tx.amount;
+            cardTotalDebt += tx.amount * (inst - cuotaNum + 1);
+          } else if (cuotaNum < 1) {
+            cardTotalDebt += tx.amount * inst; // not started
+          }
+          // cuotaNum > inst: fully paid
+        } else {
+          cardTotalDebt += tx.amount * inst;
+        }
+      }
     } else {
       totalBalance -= tx.amount;
       if (tx.date.startsWith(month)) monthlyExpenses += tx.amount;
@@ -210,7 +240,8 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
     monthlyExpenses,
     monthlyBalance: monthlyIncome - monthlyExpenses,
     saved: Math.max(monthlyIncome - monthlyExpenses, 0),
-    cardDebt,
+    cardTotalDebt,
+    cardDueThisMonth,
   };
 }
 
