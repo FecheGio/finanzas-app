@@ -3,13 +3,13 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { CreditCard, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCards, getTransactions, getCategories, deleteCard, groupByDate } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
 import { CardCarousel } from "@/components/cards/CardCarousel";
 import { AddCardModal } from "@/components/cards/AddCardModal";
-import { CardExpenseModal } from "@/components/cards/CardExpenseModal";
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
 import { TransactionBottomSheet } from "@/components/transactions/TransactionBottomSheet";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -24,7 +24,6 @@ export default function CardsPage() {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
-  const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [toDeleteCard, setToDeleteCard] = useState<Card | null>(null);
   const [deletingCard, setDeletingCard] = useState(false);
@@ -190,13 +189,13 @@ export default function CardsPage() {
 
       {/* FAB */}
       {cards.length > 0 && (
-        <button
-          onClick={() => setExpenseModalOpen(true)}
+        <Link
+          href={`/cards/expense/new${selectedCardId ? `?cardId=${selectedCardId}` : ""}`}
           className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
           style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}
         >
           <Plus className="h-7 w-7 text-lime-foreground" />
-        </button>
+        </Link>
       )}
 
       {/* Modals */}
@@ -205,15 +204,6 @@ export default function CardsPage() {
         onClose={() => setModalOpen(false)}
         onSaved={() => { load(); }}
         editing={editingCard}
-      />
-
-      <CardExpenseModal
-        open={expenseModalOpen}
-        onClose={() => setExpenseModalOpen(false)}
-        onSaved={() => { load(); }}
-        cards={cards}
-        categories={categories}
-        defaultCardId={selectedCardId}
       />
 
       <TransactionBottomSheet
