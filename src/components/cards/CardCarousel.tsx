@@ -25,7 +25,7 @@ export function CardCarousel({
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto px-5 pb-2">
+    <div className="flex gap-4 overflow-x-auto px-5 pb-3 pt-1">
       {cards.map((card) => {
         const spent = monthlySpend(card.id);
         const isSelected = selectedId === card.id;

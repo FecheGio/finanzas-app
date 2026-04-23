@@ -97,7 +97,7 @@ export default function CardsPage() {
             </span>
           </div>
           <p className="text-3xl font-black tracking-tight mb-4">{formatARS(totalCardExpenses)}</p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 overflow-x-auto pb-0.5">
             {cards.map((card) => {
               const spent = transactions
                 .filter((t) => t.card_id === card.id && t.type === "expense" && t.date.startsWith(thisMonth))
