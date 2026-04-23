@@ -22,18 +22,30 @@ const ICON_MAP: Record<string, IconComponent> = {
   default: CircleDollarSign,
 };
 
+function getInstallmentInfo(startMonth: string, installments: number) {
+  const [sy, sm] = startMonth.split("-").map(Number);
+  const now = new Date();
+  const ty = now.getFullYear();
+  const tm = now.getMonth() + 1;
+  const num = (ty - sy) * 12 + (tm - sm) + 1;
+  return { num: Math.max(1, num), isLast: num === installments, isPast: num > installments };
+}
+
 interface TransactionItemProps {
   transaction: Transaction;
   onClick?: () => void;
 }
 
 export function TransactionItem({ transaction, onClick }: TransactionItemProps) {
-  const { type, amount, description, time, category } = transaction;
+  const { type, amount, description, time, category, installments, start_month } = transaction;
   const isIncome = type === "income";
 
   const iconKey = category?.icon ?? "default";
   const Icon = ICON_MAP[iconKey] ?? ICON_MAP["default"];
   const color = category?.color ?? (isIncome ? "#22C55E" : "#E05252");
+
+  const hasCuotas = !isIncome && installments && installments > 0 && start_month;
+  const cuota = hasCuotas ? getInstallmentInfo(start_month!, installments!) : null;
 
   return (
     <div
@@ -48,12 +60,24 @@ export function TransactionItem({ transaction, onClick }: TransactionItemProps) 
         <Icon className="h-4 w-4" style={{ color }} />
       </div>
 
-      {/* Description + category */}
+      {/* Description + category + cuota */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold tracking-wide truncate">{description}</p>
-        <p className="text-xs text-muted-foreground truncate">
-          {category?.name ?? (isIncome ? "Ingreso" : "Gasto")}
-        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          <p className="text-xs text-muted-foreground truncate">
+            {category?.name ?? (isIncome ? "Ingreso" : "Gasto")}
+            {cuota && !cuota.isPast && (
+              <span className="text-muted-foreground/70">
+                {" "}· Cuota {cuota.num} de {installments}
+              </span>
+            )}
+          </p>
+          {cuota?.isLast && (
+            <span className="text-[9px] font-black tracking-wide uppercase px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400">
+              Última cuota
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Time + amount */}

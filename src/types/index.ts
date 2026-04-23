@@ -31,6 +31,8 @@ export interface Transaction {
   category?: Category;
   card_id?: string | null;
   card?: Card | null;
+  installments?: number;    // 0 = pago único, N > 0 = N cuotas
+  start_month?: string | null; // YYYY-MM, cuándo se contabiliza la primera cuota
   created_at: string;
   user_id: string;
 }

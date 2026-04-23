@@ -63,6 +63,8 @@ export default function EditTransactionPage() {
             description: transaction.description,
             date: transaction.date,
             cardId: transaction.card_id,
+            installments: transaction.installments ?? 0,
+            startMonth: transaction.start_month ?? null,
           }}
         />
       </div>

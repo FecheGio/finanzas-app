@@ -36,6 +36,8 @@ export async function createTransaction(payload: {
   description: string;
   date: string;
   card_id?: string | null;
+  installments?: number;
+  start_month?: string | null;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
@@ -61,6 +63,8 @@ export async function updateTransaction(
     description: string;
     date: string;
     card_id?: string | null;
+    installments?: number;
+    start_month?: string | null;
   }
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

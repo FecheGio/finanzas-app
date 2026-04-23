@@ -27,6 +27,8 @@ interface InitialValues {
   description: string;
   date: string;
   cardId?: string | null;
+  installments?: number;
+  startMonth?: string | null;
 }
 
 interface TransactionFormProps {
@@ -44,6 +46,11 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
   const [description, setDescription] = useState(initialValues?.description ?? "");
   const [date, setDate] = useState(initialValues?.date ?? new Date().toISOString().slice(0, 10));
   const [cardId, setCardId] = useState<string | null>(initialValues?.cardId ?? null);
+  const [installments, setInstallments] = useState<number>(initialValues?.installments ?? 0);
+  const [afterClosing, setAfterClosing] = useState<boolean>(() => {
+    if (!initialValues?.startMonth || !initialValues?.date) return false;
+    return initialValues.startMonth !== initialValues.date.slice(0, 7);
+  });
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,6 +70,13 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
 
   const filteredCategories = categories.filter((c) => c.type === type);
 
+  function computeStartMonth(dateStr: string, isAfterClosing: boolean): string {
+    const [y, m] = dateStr.split("-").map(Number);
+    if (!isAfterClosing) return `${y}-${String(m).padStart(2, "0")}`;
+    const d = new Date(y, m, 1); // month is 0-indexed so m = next month
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -74,6 +88,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
 
     setLoading(true);
     try {
+      const hasCard = type === "expense" && cardId;
       const payload = {
         amount: centavos,
         type,
@@ -81,6 +96,8 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
         description: description.trim(),
         date,
         card_id: type === "expense" ? cardId : null,
+        installments: hasCard ? installments : 0,
+        start_month: hasCard && installments > 0 ? computeStartMonth(date, afterClosing) : null,
       };
       if (isEditing && transactionId) {
         await updateTransaction(transactionId, payload);
@@ -210,6 +227,65 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* ── Cuotas (solo cuando hay tarjeta seleccionada) ─ */}
+      {type === "expense" && cardId && (
+        <div>
+          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
+            Cuotas
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {[0, 2, 3, 4, 6, 9, 12].map((n) => {
+              const sel = installments === n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setInstallments(n)}
+                  className="px-3 py-2 rounded-xl text-xs font-black tracking-wide transition-all"
+                  style={
+                    sel
+                      ? { background: `${accentColor}22`, color: accentColor, border: `1.5px solid ${accentColor}66` }
+                      : { background: "hsl(var(--card-raised))", color: "hsl(245 12% 50%)", border: "1.5px solid transparent" }
+                  }
+                >
+                  {n === 0 ? "Pago único" : `${n}x`}
+                </button>
+              );
+            })}
+          </div>
+
+          {installments > 0 && (
+            <div className="mt-3">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground mb-2">
+                ¿Cuándo fue la compra?
+              </p>
+              <div className="flex bg-card-raised rounded-xl p-1 gap-1">
+                {([false, true] as const).map((isAfter) => (
+                  <button
+                    key={String(isAfter)}
+                    type="button"
+                    onClick={() => setAfterClosing(isAfter)}
+                    className="flex-1 py-2 rounded-lg text-[10px] font-black tracking-wide uppercase transition-all"
+                    style={
+                      afterClosing === isAfter
+                        ? { background: `${accentColor}22`, color: accentColor, border: `1px solid ${accentColor}44` }
+                        : { color: "hsl(245 12% 50%)" }
+                    }
+                  >
+                    {isAfter ? "Después del cierre" : "Antes del cierre"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 mt-1.5 px-1">
+                {afterClosing
+                  ? `Se contabiliza desde ${computeStartMonth(date, true).replace("-", "/")}`
+                  : `Se contabiliza desde ${computeStartMonth(date, false).replace("-", "/")}`}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
