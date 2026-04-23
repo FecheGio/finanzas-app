@@ -3,25 +3,28 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getCards, getTransactions, deleteCard, groupByDate } from "@/lib/queries";
+import { getCards, getTransactions, getCategories, deleteCard, groupByDate } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
 import { CardCarousel } from "@/components/cards/CardCarousel";
 import { AddCardModal } from "@/components/cards/AddCardModal";
+import { CardExpenseModal } from "@/components/cards/CardExpenseModal";
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
 import { TransactionBottomSheet } from "@/components/transactions/TransactionBottomSheet";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import type { Card, Transaction } from "@/types";
+import type { Card, Category, Transaction } from "@/types";
 
 export default function CardsPage() {
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+  const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [toDeleteCard, setToDeleteCard] = useState<Card | null>(null);
   const [deletingCard, setDeletingCard] = useState(false);
@@ -31,9 +34,10 @@ export default function CardsPage() {
   const load = useCallback(async () => {
     const session = (await supabase.auth.getSession()).data.session;
     if (!session) { router.replace("/login"); return; }
-    const [c, t] = await Promise.all([getCards(), getTransactions(500)]);
+    const [c, t, cats] = await Promise.all([getCards(), getTransactions(500), getCategories()]);
     setCards(c);
     setTransactions(t);
+    setCategories(cats);
     if (c.length > 0 && !selectedCardId) setSelectedCardId(c[0].id);
     setLoading(false);
   }, [router, selectedCardId]);
@@ -103,7 +107,7 @@ export default function CardsPage() {
                 .filter((t) => t.card_id === card.id && t.type === "expense" && t.date.startsWith(thisMonth))
                 .reduce((s, t) => s + t.amount, 0);
               return (
-                <div key={card.id} className="flex items-center gap-1.5">
+                <div key={card.id} className="flex items-center gap-1.5 shrink-0">
                   <div className="h-2 w-2 rounded-full" style={{ background: card.color }} />
                   <span className="text-[10px] text-white/60 font-bold">{card.name}</span>
                   <span className="text-[10px] text-white font-black">{formatARS(spent)}</span>
@@ -144,7 +148,7 @@ export default function CardsPage() {
 
           {/* Selected card transactions */}
           {selectedCard && (
-            <div className="px-5 pb-6">
+            <div className="px-5 pb-28">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full" style={{ background: selectedCard.color }} />
@@ -164,7 +168,7 @@ export default function CardsPage() {
                 <div className="bg-card-raised rounded-2xl px-5 py-10 text-center">
                   <p className="text-sm text-muted-foreground">Sin gastos registrados con esta tarjeta</p>
                   <p className="text-xs text-muted-foreground/60 mt-1">
-                    Al crear un gasto, seleccioná esta tarjeta
+                    Usá el botón + para agregar un gasto con tarjeta
                   </p>
                 </div>
               ) : (
@@ -184,12 +188,32 @@ export default function CardsPage() {
         </>
       )}
 
+      {/* FAB */}
+      {cards.length > 0 && (
+        <button
+          onClick={() => setExpenseModalOpen(true)}
+          className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
+          style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}
+        >
+          <Plus className="h-7 w-7 text-lime-foreground" />
+        </button>
+      )}
+
       {/* Modals */}
       <AddCardModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSaved={() => { load(); }}
         editing={editingCard}
+      />
+
+      <CardExpenseModal
+        open={expenseModalOpen}
+        onClose={() => setExpenseModalOpen(false)}
+        onSaved={() => { load(); }}
+        cards={cards}
+        categories={categories}
+        defaultCardId={selectedCardId}
       />
 
       <TransactionBottomSheet
