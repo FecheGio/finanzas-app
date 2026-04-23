@@ -167,6 +167,15 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> Cargando…
           </div>
+        ) : filteredCategories.length === 0 ? (
+          <div className="bg-card-raised rounded-2xl px-5 py-6 text-center">
+            <p className="text-sm text-muted-foreground mb-1">
+              Sin categorías de {type === "expense" ? "gastos" : "ingresos"}
+            </p>
+            <a href="/categories/new" className="text-xs text-primary font-bold">
+              Crear categoría →
+            </a>
+          </div>
         ) : (
           <div className="grid grid-cols-3 gap-2">
             {filteredCategories.map((cat) => {

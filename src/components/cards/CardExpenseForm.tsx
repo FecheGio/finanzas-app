@@ -233,6 +233,12 @@ export function CardExpenseForm({ defaultCardId }: Props) {
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
           Categoría
         </label>
+        {categories.length === 0 ? (
+          <div className="bg-card-raised rounded-2xl px-5 py-6 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Sin categorías de gastos</p>
+            <a href="/categories/new" className="text-xs text-primary font-bold">Crear categoría →</a>
+          </div>
+        ) : (
         <div className="grid grid-cols-3 gap-2">
           {categories.map((cat) => {
             const selected = categoryId === cat.id;
@@ -255,6 +261,7 @@ export function CardExpenseForm({ defaultCardId }: Props) {
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Descripción */}
