@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Settings2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getTransactions, getBudgets, getCategories } from "@/lib/queries";
 import { BudgetCircle } from "@/components/budget/BudgetCircle";
@@ -174,15 +174,6 @@ export default function BudgetPage() {
           <p className="text-sm text-muted-foreground">Resumen anual próximamente</p>
         </div>
       )}
-
-      {/* FAB */}
-      <button
-        onClick={() => router.push("/transactions/new")}
-        className="fixed bottom-20 right-5 z-40 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
-        style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}
-      >
-        <Plus className="h-7 w-7 text-lime-foreground" />
-      </button>
 
       {/* Budget edit modal */}
       <BudgetEditModal

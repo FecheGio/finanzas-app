@@ -2,21 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, CreditCard, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getCategories, createTransaction, updateTransaction } from "@/lib/queries";
+import { getCategories, getCards, createTransaction, updateTransaction } from "@/lib/queries";
 import { toCentavos } from "@/lib/utils";
-import type { Category, TransactionType } from "@/types";
+import type { Category, Card, TransactionType } from "@/types";
 import * as LucideIcons from "lucide-react";
+import { EntityLogo } from "@/components/cards/AddCardModal";
 
 type AnyIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 type IconLib = Record<string, AnyIcon>;
 
 function DynIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
-  const pascal = name
-    .split(/[-_]/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
+  const pascal = name.split(/[-_]/).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join("");
   const Icon = (LucideIcons as unknown as IconLib)[pascal];
   if (!Icon) return <LucideIcons.CircleDollarSign className={className} style={style} />;
   return <Icon className={className} style={style} />;
@@ -24,10 +22,11 @@ function DynIcon({ name, className, style }: { name: string; className?: string;
 
 interface InitialValues {
   type: TransactionType;
-  amount: number; // centavos
+  amount: number;
   categoryId: string;
   description: string;
   date: string;
+  cardId?: string | null;
 }
 
 interface TransactionFormProps {
@@ -40,21 +39,25 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
   const isEditing = Boolean(transactionId);
 
   const [type, setType] = useState<TransactionType>(initialValues?.type ?? "expense");
-  const [amountStr, setAmountStr] = useState(
-    initialValues ? String(initialValues.amount / 100) : ""
-  );
+  const [amountStr, setAmountStr] = useState(initialValues ? String(initialValues.amount / 100) : "");
   const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
   const [date, setDate] = useState(initialValues?.date ?? new Date().toISOString().slice(0, 10));
+  const [cardId, setCardId] = useState<string | null>(initialValues?.cardId ?? null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCats, setLoadingCats] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getCategories()
-      .then(setCategories)
-      .catch(() => setError("No se pudieron cargar las categorías"))
+    Promise.all([
+      getCategories(),
+      getCards(),
+    ]).then(([cats, cds]) => {
+      setCategories(cats);
+      setCards(cds);
+    }).catch(() => setError("No se pudieron cargar los datos"))
       .finally(() => setLoadingCats(false));
   }, []);
 
@@ -71,22 +74,18 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
 
     setLoading(true);
     try {
+      const payload = {
+        amount: centavos,
+        type,
+        category_id: categoryId,
+        description: description.trim(),
+        date,
+        card_id: type === "expense" ? cardId : null,
+      };
       if (isEditing && transactionId) {
-        await updateTransaction(transactionId, {
-          amount: centavos,
-          type,
-          category_id: categoryId,
-          description: description.trim(),
-          date,
-        });
+        await updateTransaction(transactionId, payload);
       } else {
-        await createTransaction({
-          amount: centavos,
-          type,
-          category_id: categoryId,
-          description: description.trim(),
-          date,
-        });
+        await createTransaction(payload);
       }
       router.push("/transactions");
       router.refresh();
@@ -108,7 +107,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
           <button
             key={t}
             type="button"
-            onClick={() => { setType(t); setCategoryId(""); }}
+            onClick={() => { setType(t); setCategoryId(""); if (t === "income") setCardId(null); }}
             className="flex-1 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all"
             style={
               type === t
@@ -145,7 +144,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
       {/* ── Category selector ─────────────────────────── */}
       <div>
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
-          Categoría
+          Categoria
         </label>
         {loadingCats ? (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -166,18 +165,13 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
                     border: selected ? `1.5px solid ${cat.color}66` : "1.5px solid transparent",
                   }}
                 >
-                  <div
-                    className="h-9 w-9 rounded-xl flex items-center justify-center"
-                    style={{ background: `${cat.color}33` }}
-                  >
+                  <div className="h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: `${cat.color}33` }}>
                     <DynIcon name={cat.icon} className="h-4 w-4" style={{ color: cat.color }} />
                   </div>
                   <span className="text-[10px] font-bold leading-tight" style={{ color: selected ? cat.color : undefined }}>
                     {cat.name}
                   </span>
-                  {selected && (
-                    <Check className="absolute top-1.5 right-1.5 h-3 w-3" style={{ color: cat.color }} />
-                  )}
+                  {selected && <Check className="absolute top-1.5 right-1.5 h-3 w-3" style={{ color: cat.color }} />}
                 </button>
               );
             })}
@@ -185,10 +179,44 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
         )}
       </div>
 
+      {/* ── Card selector (solo gastos) ───────────────── */}
+      {type === "expense" && cards.length > 0 && (
+        <div>
+          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
+            Tarjeta <span className="text-muted-foreground/50">(opcional)</span>
+          </label>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {cards.map((card) => {
+              const selected = cardId === card.id;
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => setCardId(selected ? null : card.id)}
+                  className="shrink-0 flex items-center gap-2 rounded-xl px-3 py-2 transition-all"
+                  style={{
+                    background: selected ? `${card.color}22` : "hsl(var(--card-raised))",
+                    border: selected ? `1.5px solid ${card.color}66` : "1.5px solid transparent",
+                  }}
+                >
+                  <div className="scale-75">
+                    <EntityLogo entity={card.entity} />
+                  </div>
+                  <span className="text-xs font-bold" style={{ color: selected ? card.color : undefined }}>
+                    {card.name}
+                  </span>
+                  {selected && <X className="h-3 w-3" style={{ color: card.color }} />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Description ───────────────────────────────── */}
       <div>
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-1.5">
-          Descripción
+          Descripcion
         </label>
         <input
           type="text"
@@ -212,14 +240,10 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
         />
       </div>
 
-      {/* ── Error ─────────────────────────────────────── */}
       {error && (
-        <p className="text-xs text-expense font-medium bg-expense-muted rounded-xl px-4 py-2">
-          {error}
-        </p>
+        <p className="text-xs text-red-400 font-medium bg-red-400/10 rounded-xl px-4 py-2">{error}</p>
       )}
 
-      {/* ── Submit ────────────────────────────────────── */}
       <button
         type="submit"
         disabled={loading}

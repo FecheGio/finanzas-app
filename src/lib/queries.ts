@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { Category, Transaction, Budget, DashboardSummary, MonthlyStats } from "@/types";
+import type { Category, Transaction, Budget, Card, DashboardSummary, MonthlyStats } from "@/types";
 import { currentMonth } from "./utils";
 
 export async function getCategories(): Promise<Category[]> {
@@ -15,7 +15,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function getTransactions(limit = 100): Promise<Transaction[]> {
   const { data, error } = await supabase
     .from("transactions")
-    .select("*, category:categories(*)")
+    .select("*, category:categories(*), card:cards(*)")
     .order("date", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -35,12 +35,10 @@ export async function createTransaction(payload: {
   category_id: string;
   description: string;
   date: string;
+  card_id?: string | null;
 }) {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any).from("transactions").insert({
     ...payload,
@@ -62,6 +60,7 @@ export async function updateTransaction(
     category_id: string;
     description: string;
     date: string;
+    card_id?: string | null;
   }
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,7 +111,6 @@ export async function getBudgets(month: string): Promise<Budget[]> {
     .select("*, category:categories(*)")
     .or(`month.eq.${month},month.is.null`);
   if (error) throw error;
-  // prefer month-specific over recurring (null) for same category
   const map = new Map<string, Budget>();
   for (const b of (data ?? []) as Budget[]) {
     const existing = map.get(b.category_id);
@@ -141,7 +139,48 @@ export async function deleteBudget(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Computes summary stats client-side from transactions array */
+// ── Cards CRUD ────────────────────────────────────────────────
+
+export async function getCards(): Promise<Card[]> {
+  const { data, error } = await supabase
+    .from("cards")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as Card[];
+}
+
+export async function createCard(payload: {
+  name: string;
+  color: string;
+  entity: "visa" | "mastercard" | "amex";
+}): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("cards").insert({
+    ...payload,
+    user_id: session.user.id,
+  });
+  if (error) throw error;
+}
+
+export async function updateCard(
+  id: string,
+  payload: { name: string; color: string; entity: "visa" | "mastercard" | "amex" }
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("cards").update(payload).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteCard(id: string): Promise<void> {
+  const { error } = await supabase.from("cards").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ── Computed helpers ──────────────────────────────────────────
+
 export function computeSummary(transactions: Transaction[]): DashboardSummary {
   const month = currentMonth();
   let totalBalance = 0;
@@ -166,7 +205,6 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
   };
 }
 
-/** Groups transactions by date label for the activity list */
 export function groupByDate(
   transactions: Transaction[]
 ): { dateLabel: string; transactions: Transaction[] }[] {
@@ -200,7 +238,6 @@ function formatShortDate(isoDate: string): string {
     .toUpperCase();
 }
 
-/** Last 6 months stats for bar chart */
 export function computeMonthlyStats(transactions: Transaction[]): MonthlyStats[] {
   const map = new Map<string, { income: number; expenses: number }>();
   for (const tx of transactions) {

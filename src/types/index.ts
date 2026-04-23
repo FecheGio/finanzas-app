@@ -1,4 +1,5 @@
 export type TransactionType = "income" | "expense";
+export type CardEntity = "visa" | "mastercard" | "amex";
 
 export interface Category {
   id: string;
@@ -10,6 +11,15 @@ export interface Category {
   user_id: string;
 }
 
+export interface Card {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  entity: CardEntity;
+  created_at: string;
+}
+
 export interface Transaction {
   id: string;
   amount: number;       // centavos (integer — no floating point)
@@ -19,6 +29,8 @@ export interface Transaction {
   type: TransactionType;
   category_id: string;
   category?: Category;
+  card_id?: string | null;
+  card?: Card | null;
   created_at: string;
   user_id: string;
 }
@@ -29,6 +41,7 @@ export interface TransactionFormData {
   date: string;
   type: TransactionType;
   category_id: string;
+  card_id?: string | null;
 }
 
 export interface CategoryFormData {

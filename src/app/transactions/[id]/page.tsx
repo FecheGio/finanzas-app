@@ -62,6 +62,7 @@ export default function EditTransactionPage() {
             categoryId: transaction.category_id,
             description: transaction.description,
             date: transaction.date,
+            cardId: transaction.card_id,
           }}
         />
       </div>
