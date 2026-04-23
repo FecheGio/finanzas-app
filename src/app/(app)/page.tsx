@@ -35,24 +35,16 @@ export default function HomePage() {
       if (!session) { router.replace("/login"); return; }
       const alias = session.user.user_metadata?.alias ?? session.user.email?.split("@")[0] ?? "Usuario";
       setUserName(alias);
-
       getTransactions()
-        .then((txs: Transaction[]) => {
-          setTransactions(txs);
-          setSummary(computeSummary(txs));
-        })
+        .then((txs: Transaction[]) => { setTransactions(txs); setSummary(computeSummary(txs)); })
         .catch(console.error)
         .finally(() => setLoading(false));
     });
   }, [router]);
 
-  // Refrescar al volver de agregar una transacción
   useEffect(() => {
     const handler = () => {
-      getTransactions().then((txs) => {
-        setTransactions(txs);
-        setSummary(computeSummary(txs));
-      }).catch(console.error);
+      getTransactions().then((txs) => { setTransactions(txs); setSummary(computeSummary(txs)); }).catch(console.error);
     };
     window.addEventListener("focus", handler);
     return () => window.removeEventListener("focus", handler);
@@ -66,19 +58,13 @@ export default function HomePage() {
     );
   }
 
-  const monthLabel = new Date()
-    .toLocaleDateString("es-AR", { month: "long", year: "numeric" })
-    .toUpperCase();
+  const monthLabel = new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" }).toUpperCase();
 
   return (
     <div className="relative">
-      {/* Top bar */}
       <div className="flex items-center justify-between px-5 pt-6 pb-2">
         <span className="text-xs font-black tracking-[0.25em] uppercase text-muted-foreground">M—01</span>
-        <Link
-          href="/settings"
-          className="flex items-center gap-2 bg-card-raised rounded-full px-3 py-1.5 active:opacity-70 transition-opacity"
-        >
+        <Link href="/settings" className="flex items-center gap-2 bg-card-raised rounded-full px-3 py-1.5 active:opacity-70 transition-opacity">
           <span className="text-xs font-bold">{userName}</span>
           <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
             <span className="text-[10px] font-black text-white">{userName[0]?.toUpperCase()}</span>
@@ -86,47 +72,26 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* Hero */}
       <div className="px-5 pt-4 pb-6">
         <p className="text-sm text-muted-foreground mb-1">{greeting()}</p>
-        <h1 className="text-4xl font-black uppercase leading-none tracking-tight">
-          Tu balance<br />total
-        </h1>
+        <h1 className="text-4xl font-black uppercase leading-none tracking-tight">Tu balance<br />total</h1>
       </div>
 
-      {/* Balance card */}
       <div className="px-5 mb-6">
-        <BalanceCard
-          totalCentavos={summary.totalBalance}
-          incomeCentavos={summary.monthlyIncome}
-          expensesCentavos={summary.monthlyExpenses}
-          savedCentavos={summary.saved}
-          month={monthLabel}
-        />
+        <BalanceCard totalCentavos={summary.totalBalance} incomeCentavos={summary.monthlyIncome} expensesCentavos={summary.monthlyExpenses} savedCentavos={summary.saved} month={monthLabel} />
       </div>
 
-      {/* Debt card */}
       {summary.cardTotalDebt > 0 && (
         <div className="px-5 mb-6">
-          <DebtCard
-            totalDebtCentavos={summary.cardTotalDebt}
-            dueThisMonthCentavos={summary.cardDueThisMonth}
-            month={monthLabel}
-          />
+          <DebtCard totalDebtCentavos={summary.cardTotalDebt} dueThisMonthCentavos={summary.cardDueThisMonth} month={monthLabel} />
         </div>
       )}
 
-      {/* Spending chart — datos reales */}
       <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">
         <SpendingBarChart transactions={transactions} />
       </div>
 
-      {/* FAB */}
-      <Link
-        href="/transactions/new"
-        className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
-        style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}
-      >
+      <Link href="/transactions/new" className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6" style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}>
         <Plus className="h-7 w-7 text-lime-foreground" />
       </Link>
     </div>
