@@ -13,12 +13,15 @@ export function useFinancials(transactions: Transaction[]) {
     let totalBalance = 0;
     let monthlyIncome = 0;
     let monthlyExpenses = 0;
+    let cardDebt = 0;
 
     for (const tx of transactions) {
-      const amount = tx.amount; // centavos integer
+      const amount = tx.amount;
       if (tx.type === "income") {
         totalBalance += amount;
         if (tx.date.startsWith(thisMonth)) monthlyIncome += amount;
+      } else if (tx.card_id) {
+        cardDebt += amount;
       } else {
         totalBalance -= amount;
         if (tx.date.startsWith(thisMonth)) monthlyExpenses += amount;
@@ -31,6 +34,7 @@ export function useFinancials(transactions: Transaction[]) {
       monthlyExpenses,
       monthlyBalance: monthlyIncome - monthlyExpenses,
       saved: Math.max(monthlyIncome - monthlyExpenses, 0),
+      cardDebt,
     };
   }, [transactions, thisMonth]);
 

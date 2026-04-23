@@ -90,6 +90,7 @@ export interface DashboardSummary {
   monthlyExpenses: number;
   monthlyBalance: number;
   saved: number;
+  cardDebt: number;
 }
 
 export type SpendingPeriod = "W" | "M" | "Y";

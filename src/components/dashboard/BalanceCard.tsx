@@ -1,11 +1,12 @@
 import { formatARS } from "@/lib/utils";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, CreditCard } from "lucide-react";
 
 interface BalanceCardProps {
   totalCentavos: number;
   incomeCentavos: number;
   expensesCentavos: number;
   savedCentavos: number;
+  cardDebtCentavos: number;
   month: string;
 }
 
@@ -30,6 +31,7 @@ export function BalanceCard({
   incomeCentavos,
   expensesCentavos,
   savedCentavos,
+  cardDebtCentavos,
   month,
 }: BalanceCardProps) {
   return (
@@ -71,12 +73,22 @@ export function BalanceCard({
         </div>
       </div>
 
-      {/* Ahorrado — fila separada */}
-      <div className="border-t border-white/10 pt-3">
-        <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-0.5">
-          Ahorrado este mes
-        </p>
-        <p className="text-sm font-bold text-lime">{formatARS(savedCentavos)}</p>
+      {/* Ahorrado + Deuda */}
+      <div className="border-t border-white/10 pt-3 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-0.5">
+            Ahorrado este mes
+          </p>
+          <p className="text-sm font-bold text-lime">{formatARS(savedCentavos)}</p>
+        </div>
+        {cardDebtCentavos > 0 && (
+          <div className="text-right">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-white/50 mb-0.5 flex items-center justify-end gap-1">
+              <CreditCard className="h-2.5 w-2.5" /> Deuda
+            </p>
+            <p className="text-sm font-bold text-orange-300">-{formatARS(cardDebtCentavos)}</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -190,11 +190,15 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
   let totalBalance = 0;
   let monthlyIncome = 0;
   let monthlyExpenses = 0;
+  let cardDebt = 0;
 
   for (const tx of transactions) {
     if (tx.type === "income") {
       totalBalance += tx.amount;
       if (tx.date.startsWith(month)) monthlyIncome += tx.amount;
+    } else if (tx.card_id) {
+      // Card expenses: tracked as debt, excluded from cash balance
+      cardDebt += tx.amount;
     } else {
       totalBalance -= tx.amount;
       if (tx.date.startsWith(month)) monthlyExpenses += tx.amount;
@@ -206,6 +210,7 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
     monthlyExpenses,
     monthlyBalance: monthlyIncome - monthlyExpenses,
     saved: Math.max(monthlyIncome - monthlyExpenses, 0),
+    cardDebt,
   };
 }
 

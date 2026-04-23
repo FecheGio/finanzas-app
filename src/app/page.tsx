@@ -19,7 +19,7 @@ function greeting() {
 }
 
 const EMPTY: DashboardSummary = {
-  totalBalance: 0, monthlyIncome: 0, monthlyExpenses: 0, monthlyBalance: 0, saved: 0,
+  totalBalance: 0, monthlyIncome: 0, monthlyExpenses: 0, monthlyBalance: 0, saved: 0, cardDebt: 0,
 };
 
 export default function HomePage() {
@@ -100,6 +100,7 @@ export default function HomePage() {
           incomeCentavos={summary.monthlyIncome}
           expensesCentavos={summary.monthlyExpenses}
           savedCentavos={summary.saved}
+          cardDebtCentavos={summary.cardDebt}
           month={monthLabel}
         />
       </div>
