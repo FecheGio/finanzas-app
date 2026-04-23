@@ -86,7 +86,7 @@ export default function CardsPage() {
       </div>
 
       {/* Summary card */}
-      <div className="px-5 mb-6">
+      <div className="px-5 mb-3">
         <div className="card-purple-gradient rounded-2xl p-5 text-white">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">
