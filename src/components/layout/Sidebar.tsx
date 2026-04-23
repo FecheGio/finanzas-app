@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, DollarSign, PieChart, Tags, Settings, TrendingUp } from "lucide-react";
+import { LayoutDashboard, DollarSign, Wallet, Tags, CreditCard, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/",             label: "Home",        icon: Home },
-  { href: "/transactions", label: "Activity",    icon: DollarSign },
-  { href: "/budget",       label: "Budget",      icon: PieChart },
-  { href: "/categories",   label: "Categorías",  icon: Tags },
-  { href: "/settings",     label: "Ajustes",     icon: Settings },
+  { href: "/",             label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/transactions", label: "Actividad",   icon: DollarSign },
+  { href: "/budget",       label: "Presupuesto", icon: Wallet },
+  { href: "/categories",   label: "Categorias",  icon: Tags },
+  { href: "/cards",        label: "Tarjetas",    icon: CreditCard },
 ];
 
 export function Sidebar() {

@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, DollarSign, PieChart, Tags, Settings } from "lucide-react";
+import { LayoutDashboard, DollarSign, Wallet, Tags, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/",             label: "HOME",       icon: Home },
-  { href: "/transactions", label: "ACTIVITY",   icon: DollarSign },
-  { href: "/budget",       label: "BUDGET",     icon: PieChart },
-  { href: "/categories",   label: "CATEGORÍAS", icon: Tags },
-  { href: "/settings",     label: "AJUSTES",    icon: Settings },
+  { href: "/",             label: "DASHBOARD",   icon: LayoutDashboard },
+  { href: "/transactions", label: "ACTIVIDAD",   icon: DollarSign },
+  { href: "/budget",       label: "PRESUPUESTO", icon: Wallet },
+  { href: "/categories",   label: "CATEGORIAS",  icon: Tags },
+  { href: "/cards",        label: "TARJETAS",    icon: CreditCard },
 ];
 
 export function BottomNav() {
@@ -20,7 +20,7 @@ export function BottomNav() {
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border pb-safe">
       <div className="flex items-center justify-around h-16">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href === "/cards" && pathname.startsWith("/cards"));
           return (
             <Link
               key={href}

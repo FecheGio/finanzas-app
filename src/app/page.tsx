@@ -74,12 +74,15 @@ export default function HomePage() {
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 pt-6 pb-2">
         <span className="text-xs font-black tracking-[0.25em] uppercase text-muted-foreground">M—01</span>
-        <div className="flex items-center gap-2 bg-card-raised rounded-full px-3 py-1.5">
+        <Link
+          href="/settings"
+          className="flex items-center gap-2 bg-card-raised rounded-full px-3 py-1.5 active:opacity-70 transition-opacity"
+        >
           <span className="text-xs font-bold">{userName}</span>
           <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
             <span className="text-[10px] font-black text-white">{userName[0]?.toUpperCase()}</span>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Hero */}
