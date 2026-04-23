@@ -33,14 +33,15 @@ export function useFinancials(transactions: Transaction[]) {
             else if (diff < 0) { cardTotalDebt += amount; }
           } else { cardTotalDebt += amount; }
         } else {
+          const cuotaValue = amount / inst;
           if (sm) {
             const [sy, smm] = sm.split("-").map(Number);
             const cuotaNum = (cy - sy) * 12 + (cm - smm) + 1;
             if (cuotaNum >= 1 && cuotaNum <= inst) {
-              cardDueThisMonth += amount;
-              cardTotalDebt += amount * (inst - cuotaNum + 1);
-            } else if (cuotaNum < 1) { cardTotalDebt += amount * inst; }
-          } else { cardTotalDebt += amount * inst; }
+              cardDueThisMonth += cuotaValue;
+              cardTotalDebt += cuotaValue * (inst - cuotaNum + 1);
+            } else if (cuotaNum < 1) { cardTotalDebt += amount; }
+          } else { cardTotalDebt += amount; }
         }
       } else {
         totalBalance -= amount;

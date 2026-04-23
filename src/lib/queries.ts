@@ -203,30 +203,31 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
       const sm = tx.start_month;
 
       if (inst === 0) {
-        // Pago único: due in start_month
+        // Pago único: amount = total, due in start_month
         if (sm) {
           const [sy, smm] = sm.split("-").map(Number);
           const diff = (cy - sy) * 12 + (cm - smm);
           if (diff === 0) { cardDueThisMonth += tx.amount; cardTotalDebt += tx.amount; }
-          else if (diff < 0) { cardTotalDebt += tx.amount; } // not yet due
-          // diff > 0: already paid, don't count
+          else if (diff < 0) { cardTotalDebt += tx.amount; }
+          // diff > 0: already paid
         } else {
           cardTotalDebt += tx.amount;
         }
       } else {
-        // Installments: amount = monthly cuota
+        // Installments: amount = total purchase, cuota = amount / inst
+        const cuotaValue = tx.amount / inst;
         if (sm) {
           const [sy, smm] = sm.split("-").map(Number);
           const cuotaNum = (cy - sy) * 12 + (cm - smm) + 1;
           if (cuotaNum >= 1 && cuotaNum <= inst) {
-            cardDueThisMonth += tx.amount;
-            cardTotalDebt += tx.amount * (inst - cuotaNum + 1);
+            cardDueThisMonth += cuotaValue;
+            cardTotalDebt += cuotaValue * (inst - cuotaNum + 1);
           } else if (cuotaNum < 1) {
-            cardTotalDebt += tx.amount * inst; // not started
+            cardTotalDebt += tx.amount; // not started, full amount remaining
           }
           // cuotaNum > inst: fully paid
         } else {
-          cardTotalDebt += tx.amount * inst;
+          cardTotalDebt += tx.amount;
         }
       }
     } else {

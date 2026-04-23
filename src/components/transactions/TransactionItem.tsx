@@ -46,6 +46,7 @@ export function TransactionItem({ transaction, onClick }: TransactionItemProps) 
 
   const hasCuotas = !isIncome && installments && installments > 0 && start_month;
   const cuota = hasCuotas ? getInstallmentInfo(start_month!, installments!) : null;
+  const displayAmount = hasCuotas ? Math.round(amount / installments!) : amount;
 
   return (
     <div
@@ -86,7 +87,7 @@ export function TransactionItem({ transaction, onClick }: TransactionItemProps) 
           className="text-sm font-bold tabular-nums"
           style={{ color: isIncome ? "#22C55E" : "#E05252" }}
         >
-          {isIncome ? "+" : "-"}{formatARS(amount)}
+          {isIncome ? "+" : "-"}{formatARS(displayAmount)}
         </p>
         {time && (
           <p className="text-[10px] text-muted-foreground mt-0.5">{time}</p>
