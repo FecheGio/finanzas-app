@@ -74,7 +74,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="relative">
       {/* Header */}
       <div className="px-5 pt-6 pb-4">
         <div className="flex items-center gap-2 mb-2">

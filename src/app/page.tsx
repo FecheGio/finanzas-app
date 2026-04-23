@@ -70,7 +70,7 @@ export default function HomePage() {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen relative">
+    <div className="relative">
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 pt-6 pb-2">
         <span className="text-xs font-black tracking-[0.25em] uppercase text-muted-foreground">M—01</span>

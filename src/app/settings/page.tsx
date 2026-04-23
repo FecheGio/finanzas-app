@@ -74,7 +74,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen px-5 pt-6 pb-28">
+    <div className="px-5 pt-6 pb-6">
       <h1 className="text-4xl font-black uppercase leading-none tracking-tight mb-8">
         <span className="text-muted-foreground">Tu</span>
         <br />Cuenta

@@ -78,7 +78,7 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="relative">
       {/* Header */}
       <div className="px-5 pt-6 pb-6 flex items-start justify-between">
         <h1 className="text-4xl font-black uppercase leading-none tracking-tight">

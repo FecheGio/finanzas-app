@@ -8,6 +8,7 @@ import Link from "next/link";
 import * as LucideIcons from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCategories, deleteCategory } from "@/lib/queries";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Category } from "@/types";
 
 type AnyIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
@@ -22,7 +23,9 @@ export default function CategoriesPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<Category | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const load = () =>
     getCategories().then(setCategories).catch(console.error).finally(() => setLoading(false));
@@ -34,16 +37,19 @@ export default function CategoriesPage() {
     });
   }, [router]);
 
-  async function handleDelete(cat: Category) {
-    if (!confirm(`¿Eliminar "${cat.name}"? Las transacciones asociadas no se pueden borrar si tienen esta categoría.`)) return;
-    setDeleting(cat.id);
+  async function handleConfirmDelete() {
+    if (!toDelete) return;
+    setDeleting(true);
+    setErrorMsg("");
     try {
-      await deleteCategory(cat.id);
-      setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+      await deleteCategory(toDelete.id);
+      setCategories((prev) => prev.filter((c) => c.id !== toDelete.id));
+      setToDelete(null);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "No se pudo eliminar");
+      setErrorMsg(err instanceof Error ? err.message : "No se pudo eliminar");
+      setToDelete(null);
     } finally {
-      setDeleting(null);
+      setDeleting(false);
     }
   }
 
@@ -59,19 +65,18 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="relative">
       {/* Header */}
       <div className="px-5 pt-6 pb-4">
         <h1 className="text-4xl font-black uppercase leading-none tracking-tight mb-1">
-          Categories
+          Categorías
         </h1>
         <p className="text-sm text-muted-foreground">
           {categories.length} {categories.length === 1 ? "categoría" : "categorías"}
         </p>
       </div>
 
-      <div className="px-5 pb-28 space-y-6">
-        {/* Empty state */}
+      <div className="px-5 space-y-6">
         {categories.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-4xl mb-3">🏷️</p>
@@ -80,39 +85,49 @@ export default function CategoriesPage() {
           </div>
         )}
 
-        {/* Ingresos */}
-        {income.length > 0 && (
-          <Section title="Ingresos" color="#22C55E" categories={income} onDelete={handleDelete} deleting={deleting} />
+        {errorMsg && (
+          <p className="text-xs text-red-400 bg-red-400/10 rounded-xl px-4 py-2">{errorMsg}</p>
         )}
 
-        {/* Gastos */}
+        {income.length > 0 && (
+          <Section title="Ingresos" color="#22C55E" categories={income} onDelete={setToDelete} />
+        )}
+
         {expense.length > 0 && (
-          <Section title="Gastos" color="#E05252" categories={expense} onDelete={handleDelete} deleting={deleting} />
+          <Section title="Gastos" color="#E05252" categories={expense} onDelete={setToDelete} />
         )}
       </div>
 
       {/* FAB */}
       <Link
         href="/categories/new"
-        className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
+        className="fixed bottom-20 right-5 z-40 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
         style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}
       >
         <Plus className="h-7 w-7 text-lime-foreground" />
       </Link>
+
+      {/* Confirm delete dialog */}
+      <ConfirmDialog
+        open={!!toDelete}
+        title={`¿Eliminar "${toDelete?.name}"?`}
+        message="Las transacciones con esta categoría no podrán eliminarse si están asociadas."
+        confirmLabel="Eliminar"
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </div>
   );
 }
 
-// ── Section component ─────────────────────────────────────────
-
 function Section({
-  title, color, categories, onDelete, deleting,
+  title, color, categories, onDelete,
 }: {
   title: string;
   color: string;
   categories: Category[];
   onDelete: (c: Category) => void;
-  deleting: string | null;
 }) {
   return (
     <div>
@@ -125,18 +140,13 @@ function Section({
       <div className="bg-card-raised rounded-2xl divide-y divide-border">
         {categories.map((cat) => (
           <div key={cat.id} className="flex items-center gap-3 px-4 py-3.5">
-            {/* Icon */}
             <div
               className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: `${cat.color}22` }}
             >
               <DynIcon name={cat.icon} className="h-5 w-5" style={{ color: cat.color }} />
             </div>
-
-            {/* Name */}
             <span className="flex-1 text-sm font-bold">{cat.name}</span>
-
-            {/* Actions */}
             <Link
               href={`/categories/${cat.id}`}
               className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center shrink-0"
@@ -145,8 +155,7 @@ function Section({
             </Link>
             <button
               onClick={() => onDelete(cat)}
-              disabled={deleting === cat.id}
-              className="h-8 w-8 rounded-xl bg-expense-muted flex items-center justify-center shrink-0 disabled:opacity-40"
+              className="h-8 w-8 rounded-xl bg-expense-muted flex items-center justify-center shrink-0"
             >
               <Trash2 className="h-3.5 w-3.5 text-expense" />
             </button>
