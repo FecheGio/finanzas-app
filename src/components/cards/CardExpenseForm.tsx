@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Check, RefreshCw } from "lucide-react";
 import { getCards, getCategories, createTransaction } from "@/lib/queries";
 import { toCentavos } from "@/lib/utils";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import { EntityLogo } from "./AddCardModal";
 import * as LucideIcons from "lucide-react";
 import type { Card, Category } from "@/types";
@@ -48,6 +49,7 @@ export function CardExpenseForm({ defaultCardId }: Props) {
   const [cards, setCards] = useState<Card[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const cardScrollRef = useDragScroll();
 
   useEffect(() => {
     Promise.all([getCards(), getCategories()])
@@ -126,7 +128,7 @@ export function CardExpenseForm({ defaultCardId }: Props) {
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
           Tarjeta
         </label>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div ref={cardScrollRef} className="flex gap-2 overflow-x-auto pb-1 cursor-grab">
           {cards.map((card) => {
             const selected = cardId === card.id;
             return (

@@ -3,6 +3,7 @@
 import { Plus, Pencil } from "lucide-react";
 import { formatARS } from "@/lib/utils";
 import { EntityLogo } from "./AddCardModal";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import type { Card, Transaction } from "@/types";
 
 interface CardCarouselProps {
@@ -18,6 +19,8 @@ interface CardCarouselProps {
 export function CardCarousel({
   cards, transactions, selectedId, onSelect, onAdd, onEdit, month,
 }: CardCarouselProps) {
+  const scrollRef = useDragScroll();
+
   function monthlySpend(cardId: string) {
     return transactions
       .filter((t) => t.card_id === cardId && t.type === "expense" && t.date.startsWith(month))
@@ -25,7 +28,7 @@ export function CardCarousel({
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto px-5 pb-3 pt-1">
+    <div ref={scrollRef} className="flex gap-4 overflow-x-auto px-5 pb-3 pt-1 cursor-grab">
       {cards.map((card) => {
         const spent = monthlySpend(card.id);
         const isSelected = selectedId === card.id;

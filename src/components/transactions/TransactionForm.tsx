@@ -9,6 +9,7 @@ import { toCentavos } from "@/lib/utils";
 import type { Category, Card, TransactionType } from "@/types";
 import * as LucideIcons from "lucide-react";
 import { EntityLogo } from "@/components/cards/AddCardModal";
+import { useDragScroll } from "@/hooks/useDragScroll";
 
 type AnyIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 type IconLib = Record<string, AnyIcon>;
@@ -39,6 +40,7 @@ interface TransactionFormProps {
 export function TransactionForm({ transactionId, initialValues }: TransactionFormProps) {
   const router = useRouter();
   const isEditing = Boolean(transactionId);
+  const cardScrollRef = useDragScroll();
 
   const [type, setType] = useState<TransactionType>(initialValues?.type ?? "expense");
   const [amountStr, setAmountStr] = useState(initialValues ? String(initialValues.amount / 100) : "");
@@ -211,7 +213,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
           <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
             Tarjeta <span className="text-muted-foreground/50">(opcional)</span>
           </label>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div ref={cardScrollRef} className="flex gap-2 overflow-x-auto pb-1 cursor-grab">
             {cards.map((card) => {
               const selected = cardId === card.id;
               return (

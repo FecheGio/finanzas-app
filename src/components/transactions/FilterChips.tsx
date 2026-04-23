@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useDragScroll } from "@/hooks/useDragScroll";
 
 export interface ChipItem {
   label: string;
@@ -14,8 +15,9 @@ interface FilterChipsProps {
 }
 
 export function FilterChips({ chips, value, onChange }: FilterChipsProps) {
+  const scrollRef = useDragScroll();
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
+    <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 cursor-grab">
       {chips.map((chip) => {
         const isActive = value === chip.value;
         return (

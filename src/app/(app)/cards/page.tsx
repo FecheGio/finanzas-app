@@ -8,6 +8,7 @@ import { CreditCard, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCards, getTransactions, getCategories, deleteCard, groupByDate } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import { CardCarousel } from "@/components/cards/CardCarousel";
 import { AddCardModal } from "@/components/cards/AddCardModal";
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
@@ -17,6 +18,7 @@ import type { Card, Category, Transaction } from "@/types";
 
 export default function CardsPage() {
   const router = useRouter();
+  const summaryScrollRef = useDragScroll();
   const [cards, setCards] = useState<Card[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -100,7 +102,7 @@ export default function CardsPage() {
             </span>
           </div>
           <p className="text-3xl font-black tracking-tight mb-4">{formatARS(totalCardExpenses)}</p>
-          <div className="flex gap-4 overflow-x-auto pb-0.5">
+          <div ref={summaryScrollRef} className="flex gap-4 overflow-x-auto pb-0.5 cursor-grab">
             {cards.map((card) => {
               const spent = transactions
                 .filter((t) => t.card_id === card.id && t.type === "expense" && t.date.startsWith(thisMonth))
