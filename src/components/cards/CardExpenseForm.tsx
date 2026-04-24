@@ -20,7 +20,7 @@ function DynIcon({ name, className, style }: { name: string; className?: string;
   return <Icon className={className} style={style} />;
 }
 
-const CUOTA_OPTIONS = [2, 3, 4, 6, 9, 12];
+const CUOTA_PRESETS = [2, 3, 6, 12];
 const ACCENT = "#E05252";
 
 function computeStartMonth(dateStr: string, afterClosing: boolean): string {
@@ -85,7 +85,8 @@ export function CardExpenseForm({ defaultCardId, redirectTo }: Props) {
       router.push(redirectTo ?? "/cards");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar");
+      console.error("Error al guardar gasto:", err);
+      setError((err as { message?: string })?.message ?? "Error al guardar");
     } finally {
       setSaving(false);
     }
@@ -150,8 +151,8 @@ export function CardExpenseForm({ defaultCardId, redirectTo }: Props) {
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
           Cuotas
         </label>
-        <div className="flex gap-2 flex-wrap">
-          {[0, ...CUOTA_OPTIONS].map((n) => {
+        <div className="flex gap-2 flex-wrap mb-3">
+          {[0, ...CUOTA_PRESETS].map((n) => {
             const sel = installments === n;
             return (
               <button key={n} type="button" onClick={() => setInstallments(n)}
@@ -166,6 +167,26 @@ export function CardExpenseForm({ defaultCardId, redirectTo }: Props) {
             );
           })}
         </div>
+        {installments !== 0 && (
+          <div className="flex items-center gap-2">
+            <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground shrink-0">
+              Cantidad
+            </label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="1"
+              step="1"
+              value={installments}
+              onChange={(e) => {
+                const v = Math.max(1, Math.floor(Number(e.target.value) || 1));
+                setInstallments(v);
+              }}
+              className="w-24 bg-card-raised border border-border rounded-xl px-3 py-2 text-sm font-bold text-center text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <span className="text-xs text-muted-foreground">cuotas</span>
+          </div>
+        )}
       </div>
 
       {/* Antes / Después del cierre */}

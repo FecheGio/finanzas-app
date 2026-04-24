@@ -65,7 +65,8 @@ export function SubscriptionForm() {
       router.push("/subscriptions");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar");
+      console.error("Error al guardar suscripción:", err);
+      setError((err as { message?: string })?.message ?? "Error al guardar");
     } finally {
       setSaving(false);
     }
