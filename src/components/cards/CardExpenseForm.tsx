@@ -32,16 +32,18 @@ function computeStartMonth(dateStr: string, afterClosing: boolean): string {
 
 interface Props {
   defaultCardId?: string | null;
+  defaultSubscription?: boolean;
+  redirectTo?: string;
 }
 
-export function CardExpenseForm({ defaultCardId }: Props) {
+export function CardExpenseForm({ defaultCardId, defaultSubscription, redirectTo }: Props) {
   const router = useRouter();
   const [amountStr, setAmountStr] = useState("");
   const [cardId, setCardId] = useState<string | null>(defaultCardId ?? null);
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [isSubscription, setIsSubscription] = useState(false);
+  const [isSubscription, setIsSubscription] = useState(defaultSubscription ?? false);
   const [installments, setInstallments] = useState(0);
   const [afterClosing, setAfterClosing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -83,7 +85,7 @@ export function CardExpenseForm({ defaultCardId }: Props) {
         start_month: computeStartMonth(date, afterClosing),
         is_subscription: isSubscription,
       });
-      router.push("/cards");
+      router.push(redirectTo ?? "/cards");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");

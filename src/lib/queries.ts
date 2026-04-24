@@ -185,6 +185,16 @@ export async function deleteCard(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function getSubscriptions(): Promise<Transaction[]> {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*, category:categories(*), card:cards(*)")
+    .eq("is_subscription", true)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Transaction[];
+}
+
 // ── Computed helpers ──────────────────────────────────────────
 
 export function computeSummary(transactions: Transaction[]): DashboardSummary {

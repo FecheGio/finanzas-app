@@ -4,7 +4,12 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { CardExpenseForm } from "@/components/cards/CardExpenseForm";
 
-export default function CardExpensePageClient({ defaultCardId }: { defaultCardId: string | null }) {
+interface Props {
+  defaultCardId: string | null;
+  defaultSubscription?: boolean;
+}
+
+export default function CardExpensePageClient({ defaultCardId, defaultSubscription }: Props) {
   const router = useRouter();
 
   return (
@@ -16,11 +21,17 @@ export default function CardExpensePageClient({ defaultCardId }: { defaultCardId
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-lg font-black uppercase tracking-widest">Gasto con tarjeta</h1>
+        <h1 className="text-lg font-black uppercase tracking-widest">
+          {defaultSubscription ? "Nueva suscripción" : "Gasto con tarjeta"}
+        </h1>
       </div>
 
       <div className="px-5 pb-10 pt-6">
-        <CardExpenseForm defaultCardId={defaultCardId} />
+        <CardExpenseForm
+          defaultCardId={defaultCardId}
+          defaultSubscription={defaultSubscription}
+          redirectTo={defaultSubscription ? "/subscriptions" : "/cards"}
+        />
       </div>
     </div>
   );
