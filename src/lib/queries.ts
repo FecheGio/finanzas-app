@@ -209,6 +209,35 @@ export async function getOrCreateSubscriptionCategory(): Promise<string> {
 
 // ── Computed helpers ──────────────────────────────────────────
 
+/**
+ * Devuelve el monto que vence en `month` (YYYY-MM) para una transacción con tarjeta.
+ * Misma lógica que computeSummary pero para un mes y transacción específicos.
+ */
+export function cardAmountDueInMonth(tx: Transaction, month: string): number {
+  if (!tx.card_id || tx.type !== "expense") return 0;
+  const [cy, cm] = month.split("-").map(Number);
+  const inst = tx.installments ?? 0;
+  const sm = tx.start_month;
+  const isSub = tx.category?.name === "Suscripción";
+
+  if (isSub) {
+    if (!sm) return tx.amount;
+    const [sy, smm] = sm.split("-").map(Number);
+    return (cy - sy) * 12 + (cm - smm) >= 0 ? tx.amount : 0;
+  } else if (inst === 0) {
+    // Pago único: vence en start_month
+    if (!sm) return tx.amount;
+    const [sy, smm] = sm.split("-").map(Number);
+    return (cy - sy) * 12 + (cm - smm) === 0 ? tx.amount : 0;
+  } else {
+    // Cuotas
+    if (!sm) return tx.amount / inst;
+    const [sy, smm] = sm.split("-").map(Number);
+    const cuotaNum = (cy - sy) * 12 + (cm - smm) + 1;
+    return cuotaNum >= 1 && cuotaNum <= inst ? tx.amount / inst : 0;
+  }
+}
+
 export function computeSummary(transactions: Transaction[]): DashboardSummary {
   const month = currentMonth();
   const [cy, cm] = month.split("-").map(Number);

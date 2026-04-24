@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CreditCard, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getCards, getTransactions, getCategories, deleteCard, groupByDate } from "@/lib/queries";
+import { getCards, getTransactions, getCategories, deleteCard, groupByDate, cardAmountDueInMonth } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
 import { useDragScroll } from "@/hooks/useDragScroll";
 import { CardCarousel } from "@/components/cards/CardCarousel";
@@ -52,8 +52,8 @@ export default function CardsPage() {
   );
 
   const totalCardExpenses = transactions
-    .filter((t) => t.card_id != null && t.type === "expense" && t.date.startsWith(thisMonth))
-    .reduce((s, t) => s + t.amount, 0);
+    .filter((t) => t.card_id != null && t.type === "expense")
+    .reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
 
   const groups = groupByDate(cardTxs);
 
@@ -105,8 +105,8 @@ export default function CardsPage() {
           <div ref={summaryScrollRef} className="flex gap-4 overflow-x-auto pb-0.5 cursor-grab">
             {cards.map((card) => {
               const spent = transactions
-                .filter((t) => t.card_id === card.id && t.type === "expense" && t.date.startsWith(thisMonth))
-                .reduce((s, t) => s + t.amount, 0);
+                .filter((t) => t.card_id === card.id && t.type === "expense")
+                .reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
               return (
                 <div key={card.id} className="flex items-center gap-1.5 shrink-0">
                   <div className="h-2 w-2 rounded-full" style={{ background: card.color }} />

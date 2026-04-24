@@ -2,6 +2,7 @@
 
 import { Plus, Pencil } from "lucide-react";
 import { formatARS } from "@/lib/utils";
+import { cardAmountDueInMonth } from "@/lib/queries";
 import { EntityLogo } from "./AddCardModal";
 import { useDragScroll } from "@/hooks/useDragScroll";
 import type { Card, Transaction } from "@/types";
@@ -23,8 +24,8 @@ export function CardCarousel({
 
   function monthlySpend(cardId: string) {
     return transactions
-      .filter((t) => t.card_id === cardId && t.type === "expense" && t.date.startsWith(month))
-      .reduce((s, t) => s + t.amount, 0);
+      .filter((t) => t.card_id === cardId && t.type === "expense")
+      .reduce((s, t) => s + cardAmountDueInMonth(t, month), 0);
   }
 
   return (
