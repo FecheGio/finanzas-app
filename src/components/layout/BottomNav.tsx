@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, DollarSign, CreditCard, RefreshCw, MoreHorizontal, Wallet, Settings, X } from "lucide-react";
+import { LayoutDashboard, DollarSign, CreditCard, RefreshCw, MoreHorizontal, Wallet, Settings, Tags, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -14,8 +14,9 @@ const mainNavItems = [
 ];
 
 const moreItems = [
-  { href: "/budget",   label: "Presupuesto",   icon: Wallet },
-  { href: "/settings", label: "Configuración", icon: Settings },
+  { href: "/budget",     label: "Presupuesto",  icon: Wallet },
+  { href: "/categories", label: "Categorías",   icon: Tags },
+  { href: "/settings",   label: "Configuración", icon: Settings },
 ];
 
 export function BottomNav() {

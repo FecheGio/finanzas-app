@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, DollarSign, CreditCard, RefreshCw, Wallet, Settings, TrendingUp } from "lucide-react";
+import { LayoutDashboard, DollarSign, CreditCard, RefreshCw, Wallet, Settings, Tags, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/cards",         label: "Tarjetas",      icon: CreditCard },
   { href: "/subscriptions", label: "Suscripciones", icon: RefreshCw },
   { href: "/budget",        label: "Presupuesto",   icon: Wallet },
+  { href: "/categories",    label: "Categorías",    icon: Tags },
   { href: "/settings",      label: "Configuración", icon: Settings },
 ];
 
