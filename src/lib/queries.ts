@@ -186,13 +186,8 @@ export async function deleteCard(id: string): Promise<void> {
 }
 
 export async function getSubscriptions(): Promise<Transaction[]> {
-  const { data, error } = await supabase
-    .from("transactions")
-    .select("*, category:categories(*), card:cards(*)")
-    .eq("is_subscription", true)
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Transaction[];
+  const all = await getTransactions(500);
+  return all.filter((tx) => tx.is_subscription === true);
 }
 
 // ── Computed helpers ──────────────────────────────────────────
