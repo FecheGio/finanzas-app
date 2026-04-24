@@ -81,7 +81,6 @@ export function CardExpenseForm({ defaultCardId, redirectTo }: Props) {
         card_id: cardId,
         installments,
         start_month: computeStartMonth(date, afterClosing),
-        is_subscription: false,
       });
       router.push(redirectTo ?? "/cards");
       router.refresh();

@@ -187,7 +187,7 @@ export async function deleteCard(id: string): Promise<void> {
 
 export async function getSubscriptions(): Promise<Transaction[]> {
   const all = await getTransactions(500);
-  return all.filter((tx) => tx.is_subscription === true);
+  return all.filter((tx) => tx.category?.name === "Suscripción");
 }
 
 export async function getOrCreateSubscriptionCategory(): Promise<string> {
