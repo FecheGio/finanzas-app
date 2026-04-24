@@ -28,11 +28,16 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const session = (await supabase.auth.getSession()).data.session;
-    if (!session) { router.replace("/login"); return; }
-    const subs = await getSubscriptions();
-    setSubscriptions(subs);
-    setLoading(false);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      if (!session) { router.replace("/login"); return; }
+      const subs = await getSubscriptions();
+      setSubscriptions(subs);
+    } catch (e) {
+      console.error("Error cargando suscripciones:", e);
+    } finally {
+      setLoading(false);
+    }
   }, [router]);
 
   useEffect(() => { load(); }, [load]);
