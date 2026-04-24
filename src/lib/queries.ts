@@ -226,7 +226,18 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
       const inst = tx.installments ?? 0;
       const sm = tx.start_month;
 
-      if (inst === 0) {
+      const isSub = tx.category?.name === "Suscripción";
+      if (isSub) {
+        // Suscripción recurrente: se cuenta todos los meses desde start_month
+        if (!sm) {
+          cardDueThisMonth += tx.amount; cardTotalDebt += tx.amount;
+        } else {
+          const [sy, smm] = sm.split("-").map(Number);
+          if ((cy - sy) * 12 + (cm - smm) >= 0) {
+            cardDueThisMonth += tx.amount; cardTotalDebt += tx.amount;
+          }
+        }
+      } else if (inst === 0) {
         // Pago único: amount = total, due in start_month
         if (sm) {
           const [sy, smm] = sm.split("-").map(Number);

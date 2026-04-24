@@ -25,7 +25,18 @@ export function useFinancials(transactions: Transaction[]) {
       } else if (tx.card_id) {
         const inst = tx.installments ?? 0;
         const sm = tx.start_month;
-        if (inst === 0) {
+        const isSub = tx.category?.name === "Suscripción";
+        if (isSub) {
+          // Suscripción recurrente: se cuenta todos los meses desde start_month
+          if (!sm) {
+            cardDueThisMonth += amount; cardTotalDebt += amount;
+          } else {
+            const [sy, smm] = sm.split("-").map(Number);
+            if ((cy - sy) * 12 + (cm - smm) >= 0) {
+              cardDueThisMonth += amount; cardTotalDebt += amount;
+            }
+          }
+        } else if (inst === 0) {
           if (sm) {
             const [sy, smm] = sm.split("-").map(Number);
             const diff = (cy - sy) * 12 + (cm - smm);
