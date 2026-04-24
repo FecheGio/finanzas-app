@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CreditCard, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getCards, getTransactions, getCategories, deleteCard, groupByDate, cardAmountDueInMonth } from "@/lib/queries";
+import { getCards, getTransactions, getCategories, deleteCard, groupByDate, cardAmountDueInMonth, computeSummary } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
 import { useDragScroll } from "@/hooks/useDragScroll";
 import { CardCarousel } from "@/components/cards/CardCarousel";
@@ -51,9 +51,7 @@ export default function CardsPage() {
     (t) => t.card_id === selectedCardId && t.type === "expense"
   );
 
-  const totalCardExpenses = transactions
-    .filter((t) => t.card_id != null && t.type === "expense")
-    .reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
+  const { cardTotalDebt, cardDueThisMonth } = computeSummary(transactions);
 
   const groups = groupByDate(cardTxs);
 
@@ -93,25 +91,36 @@ export default function CardsPage() {
       {/* Summary card */}
       <div className="px-5 mb-3">
         <div className="card-purple-gradient rounded-2xl p-5 text-white">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">
-              Gastos con tarjeta
+          {/* Deuda total */}
+          <div className="mb-4">
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60 block mb-1">
+              Deuda total acumulada
             </span>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-white/60">
-              {new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" }).toUpperCase()}
-            </span>
+            <p className="text-3xl font-black tracking-tight">{formatARS(cardTotalDebt)}</p>
           </div>
-          <p className="text-3xl font-black tracking-tight mb-4">{formatARS(totalCardExpenses)}</p>
+
+          {/* Divider */}
+          <div className="border-t border-white/10 mb-4" />
+
+          {/* Este mes */}
+          <div className="mb-4">
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60 block mb-1">
+              A pagar este mes
+            </span>
+            <p className="text-xl font-black tracking-tight text-white/90">{formatARS(cardDueThisMonth)}</p>
+          </div>
+
+          {/* Breakdown por tarjeta */}
           <div ref={summaryScrollRef} className="flex gap-4 overflow-x-auto pb-0.5 cursor-grab">
             {cards.map((card) => {
-              const spent = transactions
+              const due = transactions
                 .filter((t) => t.card_id === card.id && t.type === "expense")
                 .reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
               return (
                 <div key={card.id} className="flex items-center gap-1.5 shrink-0">
                   <div className="h-2 w-2 rounded-full" style={{ background: card.color }} />
                   <span className="text-[10px] text-white/60 font-bold">{card.name}</span>
-                  <span className="text-[10px] text-white font-black">{formatARS(spent)}</span>
+                  <span className="text-[10px] text-white font-black">{formatARS(due)}</span>
                 </div>
               );
             })}
