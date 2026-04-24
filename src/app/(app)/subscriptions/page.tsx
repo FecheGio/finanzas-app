@@ -92,7 +92,7 @@ export default function SubscriptionsPage() {
           </div>
           <p className="text-sm text-muted-foreground text-center">No tenés suscripciones activas</p>
           <Link
-            href="/cards/expense/new?subscription=true"
+            href="/subscriptions/new"
             className="text-xs font-bold text-primary"
           >
             Agregar suscripción →
@@ -155,7 +155,7 @@ export default function SubscriptionsPage() {
 
       {/* FAB */}
       <Link
-        href="/cards/expense/new?subscription=true"
+        href="/subscriptions/new"
         className="fixed bottom-24 right-5 md:bottom-6 h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95 z-40"
         style={{ background: "#AEEA00" }}
       >

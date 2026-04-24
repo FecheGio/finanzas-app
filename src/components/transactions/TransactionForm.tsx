@@ -43,7 +43,7 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
   const cardScrollRef = useDragScroll();
 
   const [type, setType] = useState<TransactionType>(initialValues?.type ?? "expense");
-  const [amountStr, setAmountStr] = useState(initialValues ? String(initialValues.amount / 100) : "");
+  const [amountStr, setAmountStr] = useState(initialValues ? (initialValues.amount / 100).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "");
   const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
   const [date, setDate] = useState(initialValues?.date ?? new Date().toISOString().slice(0, 10));
@@ -144,17 +144,15 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
           Monto (ARS)
         </label>
-        <div className="relative inline-flex items-center">
-          <span className="text-3xl font-black text-muted-foreground mr-1">$</span>
+        <div className="flex items-center justify-center gap-1 w-full">
+          <span className="text-3xl font-black text-muted-foreground shrink-0">$</span>
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
+            placeholder="0,00"
             value={amountStr}
             onChange={(e) => setAmountStr(e.target.value)}
-            className="bg-transparent text-5xl font-black tabular-nums w-48 text-center focus:outline-none placeholder:text-muted-foreground/40"
+            className="bg-transparent text-5xl font-black tabular-nums w-full max-w-xs text-center focus:outline-none placeholder:text-muted-foreground/40"
             style={{ color: accentColor }}
           />
         </div>

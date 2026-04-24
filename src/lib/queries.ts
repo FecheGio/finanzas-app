@@ -190,6 +190,23 @@ export async function getSubscriptions(): Promise<Transaction[]> {
   return all.filter((tx) => tx.is_subscription === true);
 }
 
+export async function getOrCreateSubscriptionCategory(): Promise<string> {
+  const categories = await getCategories();
+  const existing = categories.find((c) => c.name === "Suscripción" && c.type === "expense");
+  if (existing) return existing.id;
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from("categories")
+    .insert({ name: "Suscripción", type: "expense", icon: "refresh-cw", color: "#22C55E", user_id: session.user.id })
+    .select()
+    .single();
+  if (error) throw error;
+  return data.id;
+}
+
 // ── Computed helpers ──────────────────────────────────────────
 
 export function computeSummary(transactions: Transaction[]): DashboardSummary {

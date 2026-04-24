@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Save, Loader2 } from "lucide-react";
+import { X, Save, Loader2, Trash2 } from "lucide-react";
 import { createCard, updateCard } from "@/lib/queries";
 import type { Card, CardEntity } from "@/types";
 
@@ -21,10 +21,11 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
+  onDelete?: () => void;
   editing?: Card | null;
 }
 
-export function AddCardModal({ open, onClose, onSaved, editing }: Props) {
+export function AddCardModal({ open, onClose, onSaved, onDelete, editing }: Props) {
   const [name, setName] = useState("");
   const [entity, setEntity] = useState<CardEntity>("visa");
   const [color, setColor] = useState(COLORS[0]);
@@ -163,6 +164,17 @@ export function AddCardModal({ open, onClose, onSaved, editing }: Props) {
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {saving ? "Guardando..." : editing ? "Guardar cambios" : "Agregar tarjeta"}
           </button>
+
+          {editing && onDelete && (
+            <button
+              onClick={onDelete}
+              className="w-full h-12 rounded-2xl text-sm font-black tracking-widest uppercase text-red-400 flex items-center justify-center gap-2"
+              style={{ background: "rgba(224,82,82,0.10)" }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Eliminar tarjeta
+            </button>
+          )}
         </div>
       </div>
     </>

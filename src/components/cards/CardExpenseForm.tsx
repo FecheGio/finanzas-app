@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check, RefreshCw } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { getCards, getCategories, createTransaction } from "@/lib/queries";
 import { toCentavos } from "@/lib/utils";
 import { useDragScroll } from "@/hooks/useDragScroll";
@@ -32,18 +32,16 @@ function computeStartMonth(dateStr: string, afterClosing: boolean): string {
 
 interface Props {
   defaultCardId?: string | null;
-  defaultSubscription?: boolean;
   redirectTo?: string;
 }
 
-export function CardExpenseForm({ defaultCardId, defaultSubscription, redirectTo }: Props) {
+export function CardExpenseForm({ defaultCardId, redirectTo }: Props) {
   const router = useRouter();
   const [amountStr, setAmountStr] = useState("");
   const [cardId, setCardId] = useState<string | null>(defaultCardId ?? null);
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [isSubscription, setIsSubscription] = useState(defaultSubscription ?? false);
   const [installments, setInstallments] = useState(0);
   const [afterClosing, setAfterClosing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,9 +79,9 @@ export function CardExpenseForm({ defaultCardId, defaultSubscription, redirectTo
         description: description.trim(),
         date,
         card_id: cardId,
-        installments: isSubscription ? 0 : installments,
+        installments,
         start_month: computeStartMonth(date, afterClosing),
-        is_subscription: isSubscription,
+        is_subscription: false,
       });
       router.push(redirectTo ?? "/cards");
       router.refresh();
@@ -109,17 +107,15 @@ export function CardExpenseForm({ defaultCardId, defaultSubscription, redirectTo
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
           Monto (ARS)
         </label>
-        <div className="relative inline-flex items-center">
-          <span className="text-3xl font-black text-muted-foreground mr-1">$</span>
+        <div className="flex items-center justify-center gap-1 w-full">
+          <span className="text-3xl font-black text-muted-foreground shrink-0">$</span>
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
+            placeholder="0,00"
             value={amountStr}
             onChange={(e) => setAmountStr(e.target.value)}
-            className="bg-transparent text-5xl font-black tabular-nums w-48 text-center focus:outline-none placeholder:text-muted-foreground/40"
+            className="bg-transparent text-5xl font-black tabular-nums w-full max-w-xs text-center focus:outline-none placeholder:text-muted-foreground/40"
             style={{ color: ACCENT }}
           />
         </div>
@@ -150,63 +146,28 @@ export function CardExpenseForm({ defaultCardId, defaultSubscription, redirectTo
         </div>
       </div>
 
-      {/* Suscripción */}
+      {/* Cuotas */}
       <div>
         <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
-          Suscripción
+          Cuotas
         </label>
-        <button type="button"
-          onClick={() => { setIsSubscription(!isSubscription); setInstallments(0); }}
-          className="w-full flex items-center justify-between rounded-2xl px-4 py-3 transition-all"
-          style={{
-            background: isSubscription ? "#22C55E22" : "hsl(var(--card-raised))",
-            border: isSubscription ? "1.5px solid #22C55E66" : "1.5px solid transparent",
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <RefreshCw className="h-4 w-4" style={{ color: isSubscription ? "#22C55E" : "hsl(245 12% 50%)" }} />
-            <div className="text-left">
-              <p className="text-sm font-bold" style={{ color: isSubscription ? "#22C55E" : undefined }}>
-                {isSubscription ? "Suscripción activa" : "No es suscripción"}
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                {isSubscription ? "Se cobra cada mes automáticamente" : "Pago único o en cuotas"}
-              </p>
-            </div>
-          </div>
-          <div className="h-6 w-11 rounded-full relative shrink-0"
-            style={{ background: isSubscription ? "#22C55E" : "hsl(var(--border))" }}
-          >
-            <div className="absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all"
-              style={{ left: isSubscription ? "calc(100% - 18px)" : "2px" }} />
-          </div>
-        </button>
-      </div>
-
-      {/* Cuotas (solo si no es suscripción) */}
-      {!isSubscription && (
-        <div>
-          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground block mb-3">
-            Cuotas
-          </label>
-          <div className="flex gap-2 flex-wrap">
-            {[0, ...CUOTA_OPTIONS].map((n) => {
-              const sel = installments === n;
-              return (
-                <button key={n} type="button" onClick={() => setInstallments(n)}
-                  className="px-3 py-2 rounded-xl text-xs font-black tracking-wide transition-all"
-                  style={sel
-                    ? { background: `${ACCENT}22`, color: ACCENT, border: `1.5px solid ${ACCENT}66` }
-                    : { background: "hsl(var(--card-raised))", color: "hsl(245 12% 50%)", border: "1.5px solid transparent" }
-                  }
-                >
-                  {n === 0 ? "Pago único" : `${n}x`}
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex gap-2 flex-wrap">
+          {[0, ...CUOTA_OPTIONS].map((n) => {
+            const sel = installments === n;
+            return (
+              <button key={n} type="button" onClick={() => setInstallments(n)}
+                className="px-3 py-2 rounded-xl text-xs font-black tracking-wide transition-all"
+                style={sel
+                  ? { background: `${ACCENT}22`, color: ACCENT, border: `1.5px solid ${ACCENT}66` }
+                  : { background: "hsl(var(--card-raised))", color: "hsl(245 12% 50%)", border: "1.5px solid transparent" }
+                }
+              >
+                {n === 0 ? "Pago único" : `${n}x`}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* Antes / Después del cierre */}
       <div>

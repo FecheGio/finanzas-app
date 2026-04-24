@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { CardExpenseForm } from "@/components/cards/CardExpenseForm";
+import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
 
-export default function CardExpensePageClient({ defaultCardId }: { defaultCardId: string | null }) {
+export default function NewSubscriptionPage() {
   const router = useRouter();
 
   return (
@@ -16,11 +16,11 @@ export default function CardExpensePageClient({ defaultCardId }: { defaultCardId
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-lg font-black uppercase tracking-widest">Gasto con tarjeta</h1>
+        <h1 className="text-lg font-black uppercase tracking-widest">Nueva suscripción</h1>
       </div>
 
       <div className="px-5 pb-10 pt-6">
-        <CardExpenseForm defaultCardId={defaultCardId} />
+        <SubscriptionForm />
       </div>
     </div>
   );

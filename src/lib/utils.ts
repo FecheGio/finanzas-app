@@ -15,11 +15,25 @@ export function formatARS(centavos: number): string {
   }).format(amount);
 }
 
-/** Convert decimal string input → integer centavos */
+/** Convert decimal string input → integer centavos.
+ *  Handles both standard ("1000.50") and Argentine format ("1.000,50"). */
 export function toCentavos(value: string): number {
-  const num = parseFloat(value.replace(",", "."));
+  let normalized: string;
+  if (value.includes(",")) {
+    // Argentine: dots = thousand separators, comma = decimal
+    normalized = value.replace(/\./g, "").replace(",", ".");
+  } else {
+    normalized = value;
+  }
+  const num = parseFloat(normalized);
   if (isNaN(num)) return 0;
   return Math.round(num * 100);
+}
+
+/** Format centavos as Argentine input string: "1.000,50" */
+export function formatAmountInput(centavos: number): string {
+  const num = centavos / 100;
+  return num.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /** Format ISO date to es-AR locale */

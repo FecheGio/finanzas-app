@@ -29,7 +29,10 @@ export function TransactionBottomSheet({ transaction, onClose, onDeleted }: Prop
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (transaction) setConfirming(false);
+    if (transaction) {
+      setConfirming(false);
+      setDeleting(false);
+    }
   }, [transaction]);
 
   if (!transaction) return null;

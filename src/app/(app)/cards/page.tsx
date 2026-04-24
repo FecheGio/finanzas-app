@@ -150,19 +150,11 @@ export default function CardsPage() {
           {/* Selected card transactions */}
           {selectedCard && (
             <div className="px-5 pb-28">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full" style={{ background: selectedCard.color }} />
-                  <span className="text-xs font-black tracking-[0.2em] uppercase">
-                    {selectedCard.name}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setToDeleteCard(selectedCard)}
-                  className="text-[10px] font-bold text-red-400 tracking-widest uppercase"
-                >
-                  Eliminar
-                </button>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-2 w-2 rounded-full" style={{ background: selectedCard.color }} />
+                <span className="text-xs font-black tracking-[0.2em] uppercase">
+                  {selectedCard.name}
+                </span>
               </div>
 
               {groups.length === 0 ? (
@@ -205,6 +197,7 @@ export default function CardsPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSaved={() => { load(); }}
+        onDelete={editingCard ? () => { setModalOpen(false); setToDeleteCard(editingCard); } : undefined}
         editing={editingCard}
       />
 

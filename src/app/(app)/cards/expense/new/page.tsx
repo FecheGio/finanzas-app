@@ -3,12 +3,7 @@ import CardExpensePageClient from "./CardExpensePageClient";
 export default function NewCardExpensePage({
   searchParams,
 }: {
-  searchParams: { cardId?: string; subscription?: string };
+  searchParams: { cardId?: string };
 }) {
-  return (
-    <CardExpensePageClient
-      defaultCardId={searchParams.cardId ?? null}
-      defaultSubscription={searchParams.subscription === "true"}
-    />
-  );
+  return <CardExpensePageClient defaultCardId={searchParams.cardId ?? null} />;
 }
