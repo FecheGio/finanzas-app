@@ -309,9 +309,12 @@ export function groupByDate(
 }
 
 function formatShortDate(isoDate: string): string {
-  return new Date(isoDate + "T12:00:00")
-    .toLocaleDateString("es-AR", { day: "2-digit", month: "short" })
-    .toUpperCase();
+  const currentYear = new Date().getFullYear();
+  const txYear = Number(isoDate.slice(0, 4));
+  const opts: Intl.DateTimeFormatOptions = txYear !== currentYear
+    ? { day: "2-digit", month: "short", year: "numeric" }
+    : { day: "2-digit", month: "short" };
+  return new Date(isoDate + "T12:00:00").toLocaleDateString("es-AR", opts).toUpperCase();
 }
 
 export function computeMonthlyStats(transactions: Transaction[]): MonthlyStats[] {
