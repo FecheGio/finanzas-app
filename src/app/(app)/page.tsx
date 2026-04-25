@@ -10,6 +10,7 @@ import { getTransactions, computeSummary } from "@/lib/queries";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { DebtCard } from "@/components/dashboard/DebtCard";
 import { SpendingBarChart } from "@/components/dashboard/SpendingBarChart";
+import { ExpensePieChart } from "@/components/dashboard/ExpensePieChart";
 import type { Transaction, DashboardSummary } from "@/types";
 
 function greeting() {
@@ -59,6 +60,7 @@ export default function HomePage() {
   }
 
   const monthLabel = new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" }).toUpperCase();
+  const currentMonthISO = new Date().toISOString().slice(0, 7); // YYYY-MM
 
   return (
     <div className="relative">
@@ -89,6 +91,27 @@ export default function HomePage() {
 
       <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">
         <SpendingBarChart transactions={transactions} />
+      </div>
+
+      {/* Gastos por categoría — dos tortas */}
+      <div className="px-5 mb-6">
+        <p className="text-[10px] font-black tracking-[0.25em] uppercase text-muted-foreground mb-3">
+          Gastos por categoría
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-card rounded-2xl p-4">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground mb-3">
+              Efectivo / débito
+            </p>
+            <ExpensePieChart transactions={transactions} mode="cash" month={currentMonthISO} />
+          </div>
+          <div className="bg-card rounded-2xl p-4">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground mb-3">
+              Tarjetas
+            </p>
+            <ExpensePieChart transactions={transactions} mode="card" month={currentMonthISO} />
+          </div>
+        </div>
       </div>
 
       <Link href="/transactions/new" className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6" style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}>

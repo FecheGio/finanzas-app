@@ -5,15 +5,15 @@ import { formatARS } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface MiniStatCardProps {
-  label: "INGRESOS" | "GASTOS";
+  label: string;
   centavos: number;
   trend: number;
   sparkline: number[];
+  color?: string;
 }
 
-export function MiniStatCard({ label, centavos, trend, sparkline }: MiniStatCardProps) {
-  const isIncome = label === "INGRESOS";
-  const color = isIncome ? "#22C55E" : "#E05252";
+export function MiniStatCard({ label, centavos, trend, sparkline, color: colorProp }: MiniStatCardProps) {
+  const color = colorProp ?? (label === "INGRESOS" ? "#22C55E" : "#E05252");
   const positive = trend >= 0;
 
   const chartData = sparkline.map((v, i) => ({ i, v }));

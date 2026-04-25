@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getTransactions, getCategories, groupByDate } from "@/lib/queries";
+import { getTransactions, getCategories, groupByDate, cardAmountDueInMonth } from "@/lib/queries";
 import { MiniStatCard } from "@/components/transactions/MiniStatCard";
 import { FilterChips, type ChipItem } from "@/components/transactions/FilterChips";
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
@@ -59,9 +59,14 @@ export default function TransactionsPage() {
   const monthlyIncome = transactions
     .filter((t) => t.type === "income" && t.date.startsWith(thisMonth))
     .reduce((s, t) => s + t.amount, 0);
+  // Gastos sin tarjeta (efectivo/débito) — solo los del mes actual
   const monthlyExpenses = transactions
-    .filter((t) => t.type === "expense" && t.date.startsWith(thisMonth))
+    .filter((t) => t.type === "expense" && !t.card_id && t.date.startsWith(thisMonth))
     .reduce((s, t) => s + t.amount, 0);
+  // Gastos con tarjeta — cuánto vence este mes (cuotas, suscripciones, pagos únicos)
+  const monthlyCardExpenses = transactions
+    .filter((t) => t.type === "expense" && !!t.card_id)
+    .reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
 
   const groups = groupByDate(filtered);
 
@@ -91,8 +96,9 @@ export default function TransactionsPage() {
 
       {/* Mini stat cards */}
       <div className="flex gap-3 px-5 mb-5">
-        <MiniStatCard label="INGRESOS" centavos={monthlyIncome}   trend={0} sparkline={[1,2,1,3,2,3,monthlyIncome / 10000]} />
-        <MiniStatCard label="GASTOS"   centavos={monthlyExpenses} trend={0} sparkline={[1,2,2,3,2,4,monthlyExpenses / 10000]} />
+        <MiniStatCard label="INGRESOS" centavos={monthlyIncome}      trend={0} sparkline={[1,2,1,3,2,3,monthlyIncome / 10000]} />
+        <MiniStatCard label="GASTOS"   centavos={monthlyExpenses}    trend={0} sparkline={[1,2,2,3,2,4,monthlyExpenses / 10000]} />
+        <MiniStatCard label="TARJETAS" centavos={monthlyCardExpenses} trend={0} sparkline={[1,2,1,2,3,3,monthlyCardExpenses / 10000]} color="#7C3AED" />
       </div>
 
       {/* Filter chips */}
