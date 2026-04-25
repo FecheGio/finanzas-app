@@ -91,23 +91,23 @@ export default function CardsPage() {
       {/* Summary card */}
       <div className="px-5 mb-3">
         <div className="card-purple-gradient rounded-2xl p-5 text-white">
-          {/* Deuda total */}
+          {/* Este mes — jerarquía principal */}
           <div className="mb-4">
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60 block mb-1">
-              Deuda total acumulada
+              A pagar este mes
             </span>
-            <p className="text-3xl font-black tracking-tight">{formatARS(cardTotalDebt)}</p>
+            <p className="text-3xl font-black tracking-tight">{formatARS(cardDueThisMonth)}</p>
           </div>
 
           {/* Divider */}
           <div className="border-t border-white/10 mb-4" />
 
-          {/* Este mes */}
+          {/* Deuda total — jerarquía secundaria */}
           <div className="mb-4">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60 block mb-1">
-              A pagar este mes
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/40 block mb-0.5">
+              Deuda total acumulada
             </span>
-            <p className="text-xl font-black tracking-tight text-white/90">{formatARS(cardDueThisMonth)}</p>
+            <p className="text-sm font-black tracking-tight text-white/60">{formatARS(cardTotalDebt)}</p>
           </div>
 
           {/* Breakdown por tarjeta */}
