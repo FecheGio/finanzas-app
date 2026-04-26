@@ -12,7 +12,7 @@ export async function getCategories(): Promise<Category[]> {
   return (data ?? []) as Category[];
 }
 
-export async function getTransactions(limit = 100): Promise<Transaction[]> {
+export async function getTransactions(limit = 500): Promise<Transaction[]> {
   const { data, error } = await supabase
     .from("transactions")
     .select("*, category:categories(*), card:cards(*)")
@@ -42,8 +42,7 @@ export async function createTransaction(payload: {
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any).from("transactions").insert({
+  const { error } = await supabase.from("transactions").insert({
     ...payload,
     user_id: session.user.id,
   });
@@ -69,8 +68,7 @@ export async function updateTransaction(
     is_subscription?: boolean;
   }
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any).from("transactions").update(payload).eq("id", id);
+  const { error } = await supabase.from("transactions").update(payload).eq("id", id);
   if (error) throw error;
 }
 
@@ -84,8 +82,7 @@ export async function createCategory(payload: {
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any).from("categories").insert({
+  const { error } = await supabase.from("categories").insert({
     ...payload,
     user_id: session.user.id,
   });
@@ -96,11 +93,7 @@ export async function updateCategory(
   id: string,
   payload: { name: string; icon: string; color: string }
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
-    .from("categories")
-    .update(payload)
-    .eq("id", id);
+  const { error } = await supabase.from("categories").update(payload).eq("id", id);
   if (error) throw error;
 }
 
@@ -132,8 +125,7 @@ export async function upsertBudget(payload: {
 }): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any).from("budgets").upsert(
+  const { error } = await supabase.from("budgets").upsert(
     { ...payload, user_id: session.user.id },
     { onConflict: "user_id,category_id,month" }
   );
@@ -163,8 +155,7 @@ export async function createCard(payload: {
 }): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any).from("cards").insert({
+  const { error } = await supabase.from("cards").insert({
     ...payload,
     user_id: session.user.id,
   });
@@ -175,8 +166,7 @@ export async function updateCard(
   id: string,
   payload: { name: string; color: string; entity: "visa" | "mastercard" | "amex" }
 ): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any).from("cards").update(payload).eq("id", id);
+  const { error } = await supabase.from("cards").update(payload).eq("id", id);
   if (error) throw error;
 }
 
@@ -187,7 +177,7 @@ export async function deleteCard(id: string): Promise<void> {
 
 export async function getSubscriptions(): Promise<Transaction[]> {
   const all = await getTransactions(500);
-  return all.filter((tx) => tx.category?.name === "Suscripción");
+  return all.filter((tx) => tx.is_subscription === true);
 }
 
 export async function getOrCreateSubscriptionCategory(): Promise<string> {
@@ -197,40 +187,36 @@ export async function getOrCreateSubscriptionCategory(): Promise<string> {
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("categories")
     .insert({ name: "Suscripción", type: "expense", icon: "refresh-cw", color: "#22C55E", user_id: session.user.id })
     .select()
     .single();
   if (error) throw error;
-  return data.id;
+  return (data as { id: string }).id;
 }
 
 // ── Computed helpers ──────────────────────────────────────────
 
 /**
  * Devuelve el monto que vence en `month` (YYYY-MM) para una transacción con tarjeta.
- * Misma lógica que computeSummary pero para un mes y transacción específicos.
  */
 export function cardAmountDueInMonth(tx: Transaction, month: string): number {
   if (!tx.card_id || tx.type !== "expense") return 0;
   const [cy, cm] = month.split("-").map(Number);
   const inst = tx.installments ?? 0;
   const sm = tx.start_month;
-  const isSub = tx.category?.name === "Suscripción";
+  const isSub = tx.is_subscription === true;
 
   if (isSub) {
     if (!sm) return tx.amount;
     const [sy, smm] = sm.split("-").map(Number);
     return (cy - sy) * 12 + (cm - smm) >= 0 ? tx.amount : 0;
   } else if (inst === 0) {
-    // Pago único: vence en start_month
     if (!sm) return tx.amount;
     const [sy, smm] = sm.split("-").map(Number);
     return (cy - sy) * 12 + (cm - smm) === 0 ? tx.amount : 0;
   } else {
-    // Cuotas
     if (!sm) return tx.amount / inst;
     const [sy, smm] = sm.split("-").map(Number);
     const cuotaNum = (cy - sy) * 12 + (cm - smm) + 1;
@@ -254,10 +240,9 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
     } else if (tx.card_id) {
       const inst = tx.installments ?? 0;
       const sm = tx.start_month;
+      const isSub = tx.is_subscription === true;
 
-      const isSub = tx.category?.name === "Suscripción";
       if (isSub) {
-        // Suscripción recurrente: se cuenta todos los meses desde start_month
         if (!sm) {
           cardDueThisMonth += tx.amount; cardTotalDebt += tx.amount;
         } else {
@@ -267,18 +252,15 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
           }
         }
       } else if (inst === 0) {
-        // Pago único: amount = total, due in start_month
         if (sm) {
           const [sy, smm] = sm.split("-").map(Number);
           const diff = (cy - sy) * 12 + (cm - smm);
           if (diff === 0) { cardDueThisMonth += tx.amount; cardTotalDebt += tx.amount; }
           else if (diff < 0) { cardTotalDebt += tx.amount; }
-          // diff > 0: already paid
         } else {
           cardTotalDebt += tx.amount;
         }
       } else {
-        // Installments: amount = total purchase, cuota = amount / inst
         const cuotaValue = tx.amount / inst;
         if (sm) {
           const [sy, smm] = sm.split("-").map(Number);
@@ -287,9 +269,8 @@ export function computeSummary(transactions: Transaction[]): DashboardSummary {
             cardDueThisMonth += cuotaValue;
             cardTotalDebt += cuotaValue * (inst - cuotaNum + 1);
           } else if (cuotaNum < 1) {
-            cardTotalDebt += tx.amount; // not started, full amount remaining
+            cardTotalDebt += tx.amount;
           }
-          // cuotaNum > inst: fully paid
         } else {
           cardTotalDebt += tx.amount;
         }

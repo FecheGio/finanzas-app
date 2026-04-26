@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getTransactions, computeSummary } from "@/lib/queries";
+import { getTransactions, computeSummary, computeMonthlyStats } from "@/lib/queries";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { DebtCard } from "@/components/dashboard/DebtCard";
 import { SpendingBarChart } from "@/components/dashboard/SpendingBarChart";
+import { MonthlyBarChart } from "@/components/dashboard/MonthlyBarChart";
 import { ExpensePieChart } from "@/components/dashboard/ExpensePieChart";
 import type { Transaction, DashboardSummary } from "@/types";
 
@@ -91,6 +92,10 @@ export default function HomePage() {
 
       <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">
         <SpendingBarChart transactions={transactions} />
+      </div>
+
+      <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">
+        <MonthlyBarChart stats={computeMonthlyStats(transactions)} />
       </div>
 
       {/* Gastos por categoría — dos tortas */}

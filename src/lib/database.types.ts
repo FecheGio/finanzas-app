@@ -32,35 +32,99 @@ export interface Database {
           created_at?: string;
         };
       };
+      cards: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          entity: "visa" | "mastercard" | "amex";
+          color: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          entity: "visa" | "mastercard" | "amex";
+          color: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          entity?: "visa" | "mastercard" | "amex";
+          color?: string;
+          created_at?: string;
+        };
+      };
       transactions: {
         Row: {
           id: string;
           user_id: string;
           category_id: string;
+          card_id: string | null;
           type: "income" | "expense";
           amount: number;
           description: string;
           date: string;
+          installments: number;
+          start_month: string | null;
+          is_subscription: boolean;
           created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
           category_id: string;
+          card_id?: string | null;
           type: "income" | "expense";
           amount: number;
           description?: string;
           date: string;
+          installments?: number;
+          start_month?: string | null;
+          is_subscription?: boolean;
           created_at?: string;
         };
         Update: {
           id?: string;
           user_id?: string;
           category_id?: string;
+          card_id?: string | null;
           type?: "income" | "expense";
           amount?: number;
           description?: string;
           date?: string;
+          installments?: number;
+          start_month?: string | null;
+          is_subscription?: boolean;
+          created_at?: string;
+        };
+      };
+      budgets: {
+        Row: {
+          id: string;
+          user_id: string;
+          category_id: string;
+          amount: number;
+          month: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          category_id: string;
+          amount: number;
+          month?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category_id?: string;
+          amount?: number;
+          month?: string | null;
           created_at?: string;
         };
       };
@@ -87,7 +151,7 @@ export interface Database {
         };
       };
     };
-    Functions: {};
-    Enums: {};
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
   };
 }

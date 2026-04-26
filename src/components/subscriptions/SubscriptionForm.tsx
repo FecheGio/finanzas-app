@@ -61,6 +61,7 @@ export function SubscriptionForm() {
         card_id: cardId,
         installments: 0,
         start_month: computeStartMonth(today, afterClosing),
+        is_subscription: true,
       });
       router.push("/subscriptions");
       router.refresh();

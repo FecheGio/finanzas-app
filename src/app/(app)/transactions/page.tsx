@@ -22,6 +22,8 @@ export default function TransactionsPage() {
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const thisMonth = new Date().toISOString().slice(0, 7);
+  const prevMonthDate = new Date(); prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+  const prevMonth = prevMonthDate.toISOString().slice(0, 7);
 
   const load = useCallback(async () => {
     const session = (await supabase.auth.getSession()).data.session;
@@ -56,17 +58,24 @@ export default function TransactionsPage() {
     return tx.category_id === activeFilter;
   });
 
-  const monthlyIncome = transactions
-    .filter((t) => t.type === "income" && t.date.startsWith(thisMonth))
-    .reduce((s, t) => s + t.amount, 0);
-  // Gastos sin tarjeta (efectivo/débito) — solo los del mes actual
-  const monthlyExpenses = transactions
-    .filter((t) => t.type === "expense" && !t.card_id && t.date.startsWith(thisMonth))
-    .reduce((s, t) => s + t.amount, 0);
-  // Gastos con tarjeta — cuánto vence este mes (cuotas, suscripciones, pagos únicos)
-  const monthlyCardExpenses = transactions
-    .filter((t) => t.type === "expense" && !!t.card_id)
-    .reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
+  // Este mes
+  const monthlyIncome       = transactions.filter((t) => t.type === "income"  && t.date.startsWith(thisMonth)).reduce((s, t) => s + t.amount, 0);
+  const monthlyExpenses     = transactions.filter((t) => t.type === "expense" && !t.card_id && t.date.startsWith(thisMonth)).reduce((s, t) => s + t.amount, 0);
+  const monthlyCardExpenses = transactions.filter((t) => t.type === "expense" && !!t.card_id).reduce((s, t) => s + cardAmountDueInMonth(t, thisMonth), 0);
+
+  // Mes anterior (para trend)
+  const prevIncome       = transactions.filter((t) => t.type === "income"  && t.date.startsWith(prevMonth)).reduce((s, t) => s + t.amount, 0);
+  const prevExpenses     = transactions.filter((t) => t.type === "expense" && !t.card_id && t.date.startsWith(prevMonth)).reduce((s, t) => s + t.amount, 0);
+  const prevCardExpenses = transactions.filter((t) => t.type === "expense" && !!t.card_id).reduce((s, t) => s + cardAmountDueInMonth(t, prevMonth), 0);
+
+  function calcTrend(current: number, prev: number) {
+    if (prev === 0) return 0;
+    return Math.round(((current - prev) / prev) * 100);
+  }
+
+  const incomeTrend      = calcTrend(monthlyIncome, prevIncome);
+  const expensesTrend    = calcTrend(monthlyExpenses, prevExpenses);
+  const cardExpensesTrend = calcTrend(monthlyCardExpenses, prevCardExpenses);
 
   const groups = groupByDate(filtered);
 
@@ -96,9 +105,9 @@ export default function TransactionsPage() {
 
       {/* Mini stat cards */}
       <div className="flex gap-3 px-5 mb-5">
-        <MiniStatCard label="INGRESOS" centavos={monthlyIncome}      trend={0} sparkline={[1,2,1,3,2,3,monthlyIncome / 10000]} />
-        <MiniStatCard label="GASTOS"   centavos={monthlyExpenses}    trend={0} sparkline={[1,2,2,3,2,4,monthlyExpenses / 10000]} />
-        <MiniStatCard label="TARJETAS" centavos={monthlyCardExpenses} trend={0} sparkline={[1,2,1,2,3,3,monthlyCardExpenses / 10000]} color="#7C3AED" />
+        <MiniStatCard label="INGRESOS" centavos={monthlyIncome}       trend={incomeTrend}       sparkline={[1,2,1,3,2,3,monthlyIncome / 10000]} />
+        <MiniStatCard label="GASTOS"   centavos={monthlyExpenses}     trend={expensesTrend}     sparkline={[1,2,2,3,2,4,monthlyExpenses / 10000]} />
+        <MiniStatCard label="TARJETAS" centavos={monthlyCardExpenses} trend={cardExpensesTrend} sparkline={[1,2,1,2,3,3,monthlyCardExpenses / 10000]} color="#7C3AED" />
       </div>
 
       {/* Filter chips */}
