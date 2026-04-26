@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, supabaseWriter } from "./supabase";
 import type { Category, Transaction, Budget, Card, DashboardSummary, MonthlyStats } from "@/types";
 import { currentMonth } from "./utils";
 
@@ -42,7 +42,7 @@ export async function createTransaction(payload: {
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  const { error } = await supabase.from("transactions").insert({
+  const { error } = await supabaseWriter.from("transactions").insert({
     ...payload,
     user_id: session.user.id,
   });
@@ -68,7 +68,7 @@ export async function updateTransaction(
     is_subscription?: boolean;
   }
 ) {
-  const { error } = await supabase.from("transactions").update(payload).eq("id", id);
+  const { error } = await supabaseWriter.from("transactions").update(payload).eq("id", id);
   if (error) throw error;
 }
 
@@ -82,7 +82,7 @@ export async function createCategory(payload: {
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  const { error } = await supabase.from("categories").insert({
+  const { error } = await supabaseWriter.from("categories").insert({
     ...payload,
     user_id: session.user.id,
   });
@@ -93,7 +93,7 @@ export async function updateCategory(
   id: string,
   payload: { name: string; icon: string; color: string }
 ) {
-  const { error } = await supabase.from("categories").update(payload).eq("id", id);
+  const { error } = await supabaseWriter.from("categories").update(payload).eq("id", id);
   if (error) throw error;
 }
 
@@ -125,7 +125,7 @@ export async function upsertBudget(payload: {
 }): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  const { error } = await supabase.from("budgets").upsert(
+  const { error } = await supabaseWriter.from("budgets").upsert(
     { ...payload, user_id: session.user.id },
     { onConflict: "user_id,category_id,month" }
   );
@@ -155,7 +155,7 @@ export async function createCard(payload: {
 }): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  const { error } = await supabase.from("cards").insert({
+  const { error } = await supabaseWriter.from("cards").insert({
     ...payload,
     user_id: session.user.id,
   });
@@ -166,7 +166,7 @@ export async function updateCard(
   id: string,
   payload: { name: string; color: string; entity: "visa" | "mastercard" | "amex" }
 ): Promise<void> {
-  const { error } = await supabase.from("cards").update(payload).eq("id", id);
+  const { error } = await supabaseWriter.from("cards").update(payload).eq("id", id);
   if (error) throw error;
 }
 
@@ -187,7 +187,7 @@ export async function getOrCreateSubscriptionCategory(): Promise<string> {
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
-  const { data, error } = await supabase
+  const { data, error } = await supabaseWriter
     .from("categories")
     .insert({ name: "Suscripción", type: "expense", icon: "refresh-cw", color: "#22C55E", user_id: session.user.id })
     .select()
