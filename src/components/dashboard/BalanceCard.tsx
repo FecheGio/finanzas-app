@@ -45,7 +45,10 @@ export function BalanceCard({
       </div>
 
       {/* Main amount */}
-      <div className="text-4xl font-black tracking-tight mb-5">
+      <div
+        className="text-4xl font-black tracking-tight mb-5"
+        style={totalCentavos < 0 ? { color: "#F87171" } : undefined}
+      >
         <AmountDisplay centavos={totalCentavos} />
       </div>
 
