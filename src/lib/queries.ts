@@ -224,8 +224,8 @@ export function cardAmountDueInMonth(tx: Transaction, month: string): number {
   }
 }
 
-export function computeSummary(transactions: Transaction[]): DashboardSummary {
-  const month = currentMonth();
+export function computeSummary(transactions: Transaction[], forMonth?: string): DashboardSummary {
+  const month = forMonth ?? currentMonth();
   const [cy, cm] = month.split("-").map(Number);
   let totalBalance = 0;
   let monthlyIncome = 0;

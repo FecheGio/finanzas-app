@@ -11,6 +11,7 @@ import { MiniStatCard } from "@/components/transactions/MiniStatCard";
 import { FilterChips, type ChipItem } from "@/components/transactions/FilterChips";
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
 import { TransactionBottomSheet } from "@/components/transactions/TransactionBottomSheet";
+import { MonthPicker } from "@/components/ui/MonthPicker";
 import type { Transaction, Category } from "@/types";
 
 export default function TransactionsPage() {
@@ -20,9 +21,11 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
-  const thisMonth = new Date().toISOString().slice(0, 7);
-  const prevMonthDate = new Date(); prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+  const thisMonth = selectedMonth;
+  const prevMonthDate = new Date(selectedMonth + "-01T12:00:00");
+  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
   const prevMonth = prevMonthDate.toISOString().slice(0, 7);
 
   const load = useCallback(async () => {
@@ -50,8 +53,9 @@ export default function TransactionsPage() {
     ...categories.map((c) => ({ label: c.name.toUpperCase(), value: c.id })),
   ];
 
-  // Filtrado real
+  // Filtrado por mes y por chip activo
   const filtered = transactions.filter((tx) => {
+    if (!tx.date.startsWith(thisMonth)) return false;
     if (activeFilter === "all") return true;
     if (activeFilter === "income") return tx.type === "income";
     if (activeFilter === "expense") return tx.type === "expense";
@@ -97,10 +101,12 @@ export default function TransactionsPage() {
             Actividad
           </span>
         </div>
-        <h1 className="text-4xl font-black uppercase tracking-tight leading-none mb-1">
-          Transacciones
-        </h1>
-        <p className="text-sm text-muted-foreground">Cada peso que entra y sale</p>
+        <div className="flex items-end justify-between">
+          <h1 className="text-4xl font-black uppercase tracking-tight leading-none">
+            Transacciones
+          </h1>
+          <MonthPicker month={selectedMonth} onChange={(m) => { setSelectedMonth(m); setActiveFilter("all"); }} />
+        </div>
       </div>
 
       {/* Mini stat cards */}

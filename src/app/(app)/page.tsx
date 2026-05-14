@@ -12,6 +12,7 @@ import { DebtCard } from "@/components/dashboard/DebtCard";
 import { SpendingBarChart } from "@/components/dashboard/SpendingBarChart";
 import { MonthlyBarChart } from "@/components/dashboard/MonthlyBarChart";
 import { ExpensePieChart } from "@/components/dashboard/ExpensePieChart";
+import { MonthPicker } from "@/components/ui/MonthPicker";
 import type { Transaction, DashboardSummary } from "@/types";
 
 function greeting() {
@@ -28,9 +29,9 @@ const EMPTY: DashboardSummary = {
 export default function HomePage() {
   const router = useRouter();
   const [userName, setUserName] = useState("...");
-  const [summary, setSummary] = useState<DashboardSummary>(EMPTY);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,7 +39,7 @@ export default function HomePage() {
       const alias = session.user.user_metadata?.alias ?? session.user.email?.split("@")[0] ?? "Usuario";
       setUserName(alias);
       getTransactions()
-        .then((txs: Transaction[]) => { setTransactions(txs); setSummary(computeSummary(txs)); })
+        .then((txs: Transaction[]) => setTransactions(txs))
         .catch(console.error)
         .finally(() => setLoading(false));
     });
@@ -46,7 +47,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const handler = () => {
-      getTransactions().then((txs) => { setTransactions(txs); setSummary(computeSummary(txs)); }).catch(console.error);
+      getTransactions().then(setTransactions).catch(console.error);
     };
     window.addEventListener("focus", handler);
     return () => window.removeEventListener("focus", handler);
@@ -60,8 +61,10 @@ export default function HomePage() {
     );
   }
 
-  const monthLabel = new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" }).toUpperCase();
-  const currentMonthISO = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const summary = transactions.length > 0 ? computeSummary(transactions, selectedMonth) : EMPTY;
+  const monthLabel = new Date(selectedMonth + "-01T12:00:00")
+    .toLocaleDateString("es-AR", { month: "long", year: "numeric" })
+    .toUpperCase();
 
   return (
     <div className="relative">
@@ -75,9 +78,12 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <div className="px-5 pt-4 pb-6">
+      <div className="px-5 pt-4 pb-4">
         <p className="text-sm text-muted-foreground mb-1">{greeting()}</p>
-        <h1 className="text-4xl font-black uppercase leading-none tracking-tight">Tu balance<br />total</h1>
+        <div className="flex items-end justify-between">
+          <h1 className="text-4xl font-black uppercase leading-none tracking-tight">Tu balance<br />total</h1>
+          <MonthPicker month={selectedMonth} onChange={setSelectedMonth} />
+        </div>
       </div>
 
       <div className="px-5 mb-6">
@@ -98,23 +104,22 @@ export default function HomePage() {
         <MonthlyBarChart stats={computeMonthlyStats(transactions)} />
       </div>
 
-      {/* Gastos por categoría — dos tortas */}
       <div className="px-5 mb-6">
         <p className="text-[10px] font-black tracking-[0.25em] uppercase text-muted-foreground mb-3">
-          Gastos por categoría
+          Gastos por categoría — {monthLabel}
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-2xl p-4">
             <p className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground mb-3">
               Efectivo / débito
             </p>
-            <ExpensePieChart transactions={transactions} mode="cash" month={currentMonthISO} />
+            <ExpensePieChart transactions={transactions} mode="cash" month={selectedMonth} />
           </div>
           <div className="bg-card rounded-2xl p-4">
             <p className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground mb-3">
               Tarjetas
             </p>
-            <ExpensePieChart transactions={transactions} mode="card" month={currentMonthISO} />
+            <ExpensePieChart transactions={transactions} mode="card" month={selectedMonth} />
           </div>
         </div>
       </div>
