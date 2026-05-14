@@ -1,26 +1,15 @@
 import { formatARS } from "@/lib/utils";
 import type { Transaction } from "@/types";
-import {
-  ShoppingCart, Coffee, Briefcase, Pill, Car, Tv,
-  Music, Home, Utensils, Cpu, BookOpen, CircleDollarSign,
-} from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
-type IconComponent = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+type AnyIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+type IconLib = Record<string, AnyIcon>;
 
-const ICON_MAP: Record<string, IconComponent> = {
-  "shopping-cart": ShoppingCart,
-  coffee: Coffee,
-  briefcase: Briefcase,
-  pill: Pill,
-  car: Car,
-  tv: Tv,
-  music: Music,
-  home: Home,
-  utensils: Utensils,
-  cpu: Cpu,
-  "book-open": BookOpen,
-  default: CircleDollarSign,
-};
+function DynIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  const pascal = name.split(/[-_]/).map((s) => s[0].toUpperCase() + s.slice(1)).join("");
+  const Icon = (LucideIcons as unknown as IconLib)[pascal] ?? LucideIcons.CircleDollarSign;
+  return <Icon className={className} style={style} />;
+}
 
 function getInstallmentInfo(startMonth: string, installments: number) {
   const [sy, sm] = startMonth.split("-").map(Number);
@@ -40,8 +29,6 @@ export function TransactionItem({ transaction, onClick }: TransactionItemProps) 
   const { type, amount, description, time, category, installments, start_month } = transaction;
   const isIncome = type === "income";
 
-  const iconKey = category?.icon ?? "default";
-  const Icon = ICON_MAP[iconKey] ?? ICON_MAP["default"];
   const color = category?.color ?? (isIncome ? "#22C55E" : "#E05252");
 
   const hasCuotas = !isIncome && installments && installments > 0 && start_month;
@@ -58,7 +45,7 @@ export function TransactionItem({ transaction, onClick }: TransactionItemProps) 
         className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
         style={{ background: `${color}22` }}
       >
-        <Icon className="h-4 w-4" style={{ color }} />
+        <DynIcon name={category?.icon ?? "circle-dollar-sign"} className="h-4 w-4" style={{ color }} />
       </div>
 
       {/* Description + category + cuota */}
