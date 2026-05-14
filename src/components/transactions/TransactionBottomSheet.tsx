@@ -6,6 +6,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { deleteTransaction } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
+import { showToast } from "@/components/ui/Toast";
 import type { Transaction } from "@/types";
 
 type AnyIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
@@ -46,10 +47,12 @@ export function TransactionBottomSheet({ transaction, onClose, onDeleted }: Prop
     setDeleting(true);
     try {
       await deleteTransaction(id);
+      showToast(is_subscription ? "Suscripción eliminada" : "Transacción eliminada");
       onDeleted();
       onClose();
     } catch (e) {
       console.error(e);
+      showToast("Error al eliminar", "error");
       setDeleting(false);
     }
   }

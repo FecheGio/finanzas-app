@@ -62,9 +62,16 @@ export default function HomePage() {
   }
 
   const summary = transactions.length > 0 ? computeSummary(transactions, selectedMonth) : EMPTY;
+  const currentMonthISO = new Date().toISOString().slice(0, 7);
+  const isCurrentMonth = selectedMonth === currentMonthISO;
   const monthLabel = new Date(selectedMonth + "-01T12:00:00")
     .toLocaleDateString("es-AR", { month: "long", year: "numeric" })
     .toUpperCase();
+
+  // Para meses pasados, el número principal es el balance neto del mes.
+  // Para el mes actual, es el acumulado histórico (fondos disponibles reales).
+  const mainBalance = isCurrentMonth ? summary.totalBalance : summary.monthlyBalance;
+  const mainLabel = isCurrentMonth ? "Fondos disponibles" : "Balance del mes";
 
   return (
     <div className="relative">
@@ -87,7 +94,7 @@ export default function HomePage() {
       </div>
 
       <div className="px-5 mb-6">
-        <BalanceCard totalCentavos={summary.totalBalance} incomeCentavos={summary.monthlyIncome} expensesCentavos={summary.monthlyExpenses} savedCentavos={summary.saved} month={monthLabel} />
+        <BalanceCard totalCentavos={mainBalance} incomeCentavos={summary.monthlyIncome} expensesCentavos={summary.monthlyExpenses} savedCentavos={summary.saved} month={monthLabel} mainLabel={mainLabel} />
       </div>
 
       {summary.cardTotalDebt > 0 && (
@@ -97,7 +104,7 @@ export default function HomePage() {
       )}
 
       <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">
-        <SpendingBarChart transactions={transactions} />
+        <SpendingBarChart transactions={transactions} month={selectedMonth} />
       </div>
 
       <div className="bg-card rounded-3xl mx-5 pt-5 pb-4 mb-6">

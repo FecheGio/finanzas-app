@@ -132,6 +132,7 @@ export function SubscriptionForm({ transactionId, initialValues }: SubscriptionF
             placeholder="0,00"
             value={amountStr}
             onChange={(e) => setAmountStr(e.target.value)}
+            onFocus={(e) => e.target.select()}
             className="bg-transparent text-5xl font-black tabular-nums w-full max-w-xs text-center focus:outline-none placeholder:text-muted-foreground/40"
             style={{ color: ACCENT }}
           />

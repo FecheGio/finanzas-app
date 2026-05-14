@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Pencil, Trash2, RefreshCw } from "lucide-react";
 import { deleteTransaction } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
+import { showToast } from "@/components/ui/Toast";
 import { EntityLogo } from "@/components/cards/AddCardModal";
 import type { Transaction } from "@/types";
 
@@ -34,10 +35,12 @@ export function SubscriptionBottomSheet({ subscription, onClose, onDeleted }: Pr
     setDeleting(true);
     try {
       await deleteTransaction(id);
+      showToast("Suscripción eliminada");
       onDeleted();
       onClose();
     } catch (e) {
       console.error(e);
+      showToast("Error al eliminar", "error");
       setDeleting(false);
     }
   }

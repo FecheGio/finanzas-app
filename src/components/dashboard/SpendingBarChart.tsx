@@ -33,10 +33,10 @@ function computeWeekly(transactions: Transaction[]): SpendingDataPoint[] {
   }));
 }
 
-function computeMonthly(transactions: Transaction[]): SpendingDataPoint[] {
-  const now = new Date();
+function computeMonthly(transactions: Transaction[], endMonth: string): SpendingDataPoint[] {
+  const [y, m] = endMonth.split("-").map(Number);
   return Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const d = new Date(y, m - 1 - (5 - i), 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const amount = transactions
       .filter((t) => t.type === "expense" && t.date.startsWith(key))
@@ -67,14 +67,17 @@ function shortARS(value: number): string {
 
 interface SpendingBarChartProps {
   transactions: Transaction[];
+  month?: string; // YYYY-MM, defaults to current month
 }
 
-export function SpendingBarChart({ transactions }: SpendingBarChartProps) {
+export function SpendingBarChart({ transactions, month }: SpendingBarChartProps) {
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const selectedMonth = month ?? currentMonth;
   const [period, setPeriod] = useState<SpendingPeriod>("W");
 
   const data: SpendingDataPoint[] =
     period === "W" ? computeWeekly(transactions)
-    : period === "M" ? computeMonthly(transactions)
+    : period === "M" ? computeMonthly(transactions, selectedMonth)
     : computeYearly(transactions);
 
   const hasData = data.some((d) => d.amount > 0);

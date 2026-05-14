@@ -38,9 +38,14 @@ export function MonthPicker({ month, onChange }: Props) {
         <ChevronLeft className="h-4 w-4 text-muted-foreground" />
       </button>
 
-      <span className="text-[11px] font-black tracking-[0.15em] uppercase text-muted-foreground min-w-[110px] text-center">
+      <button
+        onClick={() => !isCurrentMonth && onChange(currentMonth)}
+        className="text-[11px] font-black tracking-[0.15em] uppercase min-w-[110px] text-center transition-colors"
+        style={{ color: isCurrentMonth ? "hsl(245 12% 50%)" : "hsl(var(--foreground))" }}
+        title={isCurrentMonth ? undefined : "Volver al mes actual"}
+      >
         {label(month)}
-      </span>
+      </button>
 
       <button
         onClick={() => onChange(addMonths(month, 1))}

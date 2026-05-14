@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CreditCard, Plus } from "lucide-react";
+import { CreditCard, Plus, PlusCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCards, getTransactions, getCategories, deleteCard, groupByDate, cardAmountDueInMonth, computeSummary } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
@@ -196,8 +196,12 @@ export default function CardsPage() {
           href={`/cards/expense/new${selectedCardId ? `?cardId=${selectedCardId}` : ""}`}
           className="fixed bottom-20 right-5 z-50 h-14 w-14 rounded-full bg-lime flex items-center justify-center md:bottom-6"
           style={{ boxShadow: "0 0 20px 4px rgba(174,234,0,0.35)" }}
+          title="Registrar gasto con tarjeta"
         >
-          <Plus className="h-7 w-7 text-lime-foreground" />
+          <div className="relative">
+            <CreditCard className="h-6 w-6 text-lime-foreground" />
+            <PlusCircle className="absolute -top-2 -right-2 h-3.5 w-3.5 text-lime-foreground" strokeWidth={2.5} />
+          </div>
         </Link>
       )}
 

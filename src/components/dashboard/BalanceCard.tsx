@@ -7,6 +7,7 @@ interface BalanceCardProps {
   expensesCentavos: number;
   savedCentavos: number;
   month: string;
+  mainLabel?: string;
 }
 
 function AmountDisplay({ centavos }: { centavos: number }) {
@@ -31,13 +32,14 @@ export function BalanceCard({
   expensesCentavos,
   savedCentavos,
   month,
+  mainLabel = "Fondos disponibles",
 }: BalanceCardProps) {
   return (
     <div className="card-purple-gradient rounded-2xl p-5 text-white shadow-xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">
-          Fondos disponibles
+          {mainLabel}
         </span>
         <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-white/60">
           {month}
