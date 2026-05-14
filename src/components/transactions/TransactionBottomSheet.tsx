@@ -37,7 +37,8 @@ export function TransactionBottomSheet({ transaction, onClose, onDeleted }: Prop
 
   if (!transaction) return null;
 
-  const { id, type, amount, description, date, category } = transaction;
+  const { id, type, amount, description, date, category, is_subscription } = transaction;
+  const editPath = is_subscription ? `/subscriptions/${id}` : `/transactions/${id}`;
   const isIncome = type === "income";
   const color = category?.color ?? (isIncome ? "#22C55E" : "#E05252");
 
@@ -95,7 +96,7 @@ export function TransactionBottomSheet({ transaction, onClose, onDeleted }: Prop
         {!confirming ? (
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => { onClose(); router.push(`/transactions/${id}`); }}
+              onClick={() => { onClose(); router.push(editPath); }}
               className="w-full h-12 rounded-2xl bg-card-raised flex items-center justify-center gap-2 text-sm font-black tracking-widest uppercase"
             >
               <Pencil className="h-4 w-4" />
