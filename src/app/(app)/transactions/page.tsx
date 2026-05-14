@@ -12,7 +12,30 @@ import { FilterChips, type ChipItem } from "@/components/transactions/FilterChip
 import { TransactionGroup } from "@/components/transactions/TransactionItem";
 import { TransactionBottomSheet } from "@/components/transactions/TransactionBottomSheet";
 import { MonthPicker } from "@/components/ui/MonthPicker";
+import { Download } from "lucide-react";
 import type { Transaction, Category } from "@/types";
+
+function exportCSV(transactions: Transaction[], month: string) {
+  const rows = [
+    ["Fecha", "Tipo", "Categoría", "Descripción", "Tarjeta", "Monto (ARS)"],
+    ...transactions.map((tx) => [
+      tx.date,
+      tx.type === "income" ? "Ingreso" : "Gasto",
+      tx.category?.name ?? "",
+      tx.description,
+      tx.card?.name ?? "",
+      (tx.amount / 100).toFixed(2).replace(".", ","),
+    ]),
+  ];
+  const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `finanzas-${month}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -101,11 +124,21 @@ export default function TransactionsPage() {
             Actividad
           </span>
         </div>
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between gap-3">
           <h1 className="text-4xl font-black uppercase tracking-tight leading-none">
             Transacciones
           </h1>
-          <MonthPicker month={selectedMonth} onChange={(m) => { setSelectedMonth(m); setActiveFilter("all"); }} />
+          <div className="flex items-center gap-2 shrink-0">
+            <MonthPicker month={selectedMonth} onChange={(m) => { setSelectedMonth(m); setActiveFilter("all"); }} />
+            <button
+              onClick={() => exportCSV(filtered, selectedMonth)}
+              disabled={filtered.length === 0}
+              className="h-7 w-7 rounded-full bg-card-raised flex items-center justify-center active:opacity-60 transition-opacity disabled:opacity-30"
+              title="Exportar CSV"
+            >
+              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </div>
 
