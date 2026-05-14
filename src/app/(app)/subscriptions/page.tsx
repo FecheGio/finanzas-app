@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { getSubscriptions } from "@/lib/queries";
 import { formatARS } from "@/lib/utils";
 import { EntityLogo } from "@/components/cards/AddCardModal";
+import { SubscriptionBottomSheet } from "@/components/subscriptions/SubscriptionBottomSheet";
 import * as LucideIcons from "lucide-react";
 import type { Transaction } from "@/types";
 
@@ -26,6 +27,7 @@ export default function SubscriptionsPage() {
   const router = useRouter();
   const [subscriptions, setSubscriptions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSub, setSelectedSub] = useState<Transaction | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -104,9 +106,10 @@ export default function SubscriptionsPage() {
             const cat = tx.category;
             const card = tx.card;
             return (
-              <div
+              <button
                 key={tx.id}
-                className="flex items-center gap-3 rounded-2xl px-4 py-3.5 bg-card"
+                onClick={() => setSelectedSub(tx)}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3.5 bg-card w-full text-left active:opacity-70 transition-opacity"
                 style={{ border: "1px solid hsl(var(--border))" }}
               >
                 {/* Category icon */}
@@ -147,11 +150,17 @@ export default function SubscriptionsPage() {
                   <p className="text-sm font-black text-foreground">{formatARS(tx.amount)}</p>
                   <p className="text-[10px] text-muted-foreground font-semibold">/mes</p>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       )}
+
+      <SubscriptionBottomSheet
+        subscription={selectedSub}
+        onClose={() => setSelectedSub(null)}
+        onDeleted={load}
+      />
 
       {/* FAB */}
       <Link

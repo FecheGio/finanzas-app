@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { getCards, getOrCreateSubscriptionCategory, createTransaction } from "@/lib/queries";
-import { toCentavos } from "@/lib/utils";
+import { getCards, getOrCreateSubscriptionCategory, createTransaction, updateTransaction } from "@/lib/queries";
+import { toCentavos, formatAmountInput } from "@/lib/utils";
 import { useDragScroll } from "@/hooks/useDragScroll";
 import { EntityLogo } from "@/components/cards/AddCardModal";
 import type { Card } from "@/types";
@@ -18,28 +18,45 @@ function computeStartMonth(dateStr: string, afterClosing: boolean): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export function SubscriptionForm() {
+interface InitialValues {
+  amount: number;
+  name: string;
+  cardId: string | null;
+  afterClosing: boolean;
+  date: string;
+}
+
+interface SubscriptionFormProps {
+  transactionId?: string;
+  initialValues?: InitialValues;
+}
+
+export function SubscriptionForm({ transactionId, initialValues }: SubscriptionFormProps) {
   const router = useRouter();
-  const [amountStr, setAmountStr] = useState("");
-  const [name, setName] = useState("");
-  const [cardId, setCardId] = useState<string | null>(null);
-  const [afterClosing, setAfterClosing] = useState(false);
+  const isEdit = !!transactionId;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [amountStr, setAmountStr] = useState(
+    initialValues ? formatAmountInput(initialValues.amount) : ""
+  );
+  const [name, setName] = useState(initialValues?.name ?? "");
+  const [cardId, setCardId] = useState<string | null>(initialValues?.cardId ?? null);
+  const [afterClosing, setAfterClosing] = useState(initialValues?.afterClosing ?? false);
+  const [date] = useState(initialValues?.date ?? today);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [cards, setCards] = useState<Card[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const cardScrollRef = useDragScroll();
 
-  const today = new Date().toISOString().slice(0, 10);
-
   useEffect(() => {
     getCards()
       .then((c) => {
         setCards(c);
-        if (c.length > 0) setCardId(c[0].id);
+        if (!initialValues?.cardId && c.length > 0) setCardId(c[0].id);
       })
       .finally(() => setLoadingData(false));
-  }, []);
+  }, [initialValues?.cardId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,17 +69,33 @@ export function SubscriptionForm() {
     setSaving(true);
     try {
       const categoryId = await getOrCreateSubscriptionCategory();
-      await createTransaction({
-        amount: centavos,
-        type: "expense",
-        category_id: categoryId,
-        description: name.trim(),
-        date: today,
-        card_id: cardId,
-        installments: 0,
-        start_month: computeStartMonth(today, afterClosing),
-        is_subscription: true,
-      });
+      const startMonth = computeStartMonth(date, afterClosing);
+
+      if (isEdit) {
+        await updateTransaction(transactionId, {
+          amount: centavos,
+          type: "expense",
+          category_id: categoryId,
+          description: name.trim(),
+          date,
+          card_id: cardId,
+          installments: 0,
+          start_month: startMonth,
+          is_subscription: true,
+        });
+      } else {
+        await createTransaction({
+          amount: centavos,
+          type: "expense",
+          category_id: categoryId,
+          description: name.trim(),
+          date,
+          card_id: cardId,
+          installments: 0,
+          start_month: startMonth,
+          is_subscription: true,
+        });
+      }
       router.push("/subscriptions");
       router.refresh();
     } catch (err) {
@@ -168,7 +201,7 @@ export function SubscriptionForm() {
           ))}
         </div>
         <p className="text-[10px] text-muted-foreground/60 mt-1.5 px-1">
-          Se contabiliza desde {computeStartMonth(today, afterClosing).replace("-", "/")}
+          Se contabiliza desde {computeStartMonth(date, afterClosing).replace("-", "/")}
         </p>
       </div>
 
@@ -181,7 +214,7 @@ export function SubscriptionForm() {
         style={{ background: ACCENT, color: "#fff" }}
       >
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        Guardar suscripción
+        {isEdit ? "Guardar cambios" : "Guardar suscripción"}
       </button>
     </form>
   );
