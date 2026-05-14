@@ -7,6 +7,16 @@ const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "
 export const metadata: Metadata = {
   title: "FinanzasPro",
   description: "Gestor de finanzas personales",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FinanzasPro",
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {
