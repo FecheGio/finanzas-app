@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Check } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { createCategory, updateCategory } from "@/lib/queries";
+import { showToast } from "@/components/ui/Toast";
 import type { Category, TransactionType } from "@/types";
 
 // ── Íconos disponibles ────────────────────────────────────────
@@ -86,8 +87,10 @@ export function CategoryForm({ existing }: CategoryFormProps) {
     try {
       if (existing) {
         await updateCategory(existing.id, { name: name.trim(), icon, color });
+        showToast("Categoría actualizada");
       } else {
         await createCategory({ name: name.trim(), type, icon, color });
+        showToast("Categoría creada");
       }
       router.push("/categories");
       router.refresh();

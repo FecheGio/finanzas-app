@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { getCards, getOrCreateSubscriptionCategory, createTransaction, updateTransaction } from "@/lib/queries";
 import { toCentavos, formatAmountInput } from "@/lib/utils";
+import { showToast } from "@/components/ui/Toast";
 import { useDragScroll } from "@/hooks/useDragScroll";
 import { EntityLogo } from "@/components/cards/AddCardModal";
 import type { Card } from "@/types";
@@ -72,6 +73,7 @@ export function SubscriptionForm({ transactionId, initialValues }: SubscriptionF
       const startMonth = computeStartMonth(date, afterClosing);
 
       if (isEdit) {
+        showToast("Suscripción actualizada");
         await updateTransaction(transactionId, {
           amount: centavos,
           type: "expense",
@@ -95,6 +97,7 @@ export function SubscriptionForm({ transactionId, initialValues }: SubscriptionF
           start_month: startMonth,
           is_subscription: true,
         });
+        showToast("Suscripción guardada");
       }
       router.push("/subscriptions");
       router.refresh();

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Save, Loader2, Trash2 } from "lucide-react";
 import { createCard, updateCard } from "@/lib/queries";
+import { showToast } from "@/components/ui/Toast";
 import type { Card, CardEntity } from "@/types";
 
 const COLORS = [
@@ -50,8 +51,10 @@ export function AddCardModal({ open, onClose, onSaved, onDelete, editing }: Prop
     try {
       if (editing) {
         await updateCard(editing.id, { name: name.trim(), entity, color });
+        showToast("Tarjeta actualizada");
       } else {
         await createCard({ name: name.trim(), entity, color });
+        showToast("Tarjeta creada");
       }
       onSaved();
       onClose();

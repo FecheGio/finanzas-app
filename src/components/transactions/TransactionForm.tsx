@@ -6,6 +6,7 @@ import { Loader2, Check, CreditCard, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCategories, getCards, createTransaction, updateTransaction } from "@/lib/queries";
 import { toCentavos } from "@/lib/utils";
+import { showToast } from "@/components/ui/Toast";
 import type { Category, Card, TransactionType } from "@/types";
 import * as LucideIcons from "lucide-react";
 import { EntityLogo } from "@/components/cards/AddCardModal";
@@ -103,8 +104,10 @@ export function TransactionForm({ transactionId, initialValues }: TransactionFor
       };
       if (isEditing && transactionId) {
         await updateTransaction(transactionId, payload);
+        showToast("Transacción actualizada");
       } else {
         await createTransaction(payload);
+        showToast("Transacción guardada");
       }
       router.push("/transactions");
       router.refresh();
